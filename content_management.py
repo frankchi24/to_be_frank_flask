@@ -6,13 +6,22 @@ def Content():
 	"title":"Python Flask and Jinjia Tutorial",
 	"subtitle":"To become one of the few who can code is not cool",
 	"url":"/first_post/",
-	"author":"Frank"
+	"author":"Frank",
+	"time":"Sep. 12, 2016"
 	},
 	{
 	"title":"Thoughts on Netflix and Amazon",
 	"subtitle":"Not sure about the first week",
 	"url":"/second_post/",
-	"author":"Frank"
+	"author":"Frank",
+	"time":"Sep. 1, 2016"
+	},
+	{
+	"title":"The Journey So Far as a Software Developer",
+	"subtitle":"Coudn't be better!!",
+	"url":"/third_post/",
+	"author":"Frank",
+	"time":"Aug. 1, 2016"
 	}
 	]
 	return TOPIC_DIC
