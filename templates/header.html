@@ -12,6 +12,7 @@
 
     <!-- Bootstrap Core CSS -->
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel = "stylesheet">
+
     <!-- Custom Fonts -->
     <link href="{{ url_for('static', filename='vendor/font-awesome/css/font-awesome.min.css') }}" rel= "stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
@@ -49,13 +50,13 @@
                         <a href="/">Home</a>
                     </li>
                     <li>
-                        <a href="/about">About Me</a>
+                        <a href="/about/">About Me</a>
                     </li>
                     <li>
-                        <a href="/post">Post</a>
+                        <a href="/post/">Post</a>
                     </li>
                     <li>
-                        <a href="/contact">Contact</a>
+                        <a href="/contact/">Contact</a>
                     </li>
                 </ul>
             </div>
@@ -102,8 +103,10 @@
             </div>
         </div>
     </footer>
-        <!-- jQuery -->
+    
+    <!-- jQuery -->
     <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+
     <!-- Bootstrap Core JavaScript -->
     <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 
