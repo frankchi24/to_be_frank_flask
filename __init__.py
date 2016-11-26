@@ -20,6 +20,7 @@ def homepage():
 
 @app.route('/about/')
 def about():
+	flash("You are now Loged in")
 	return render_template("/about.html")
 
 @app.route('/project/')

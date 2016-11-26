@@ -19,7 +19,7 @@
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
 
     <!-- Theme CSS -->
-    <link href="{{ url_for('static', filename='css/clean-blog.min.css') }}" rel = "stylesheet">
+    <link href="{{ url_for('static', filename='css/to_be_frank.css') }}" rel = "stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -31,6 +31,20 @@
 </head>
 
 <body>
+    <div class="container-fluid" style = "min-height:100% width:100%">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for m in messages %}
+                <div class="alert alert-success alert-dismissible" role = "alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                {{ m }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
         <!-- Navigation -->
     <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
         <div class="container-fluid">
@@ -67,9 +81,8 @@
         </div>
         <!-- /.container -->
     </nav>
-    {% block content %}
 
-    {% endblock %}
+    {% block content %}{% endblock %}
         <!-- Footer -->
     <footer>
         <div class="container">
