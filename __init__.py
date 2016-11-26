@@ -20,7 +20,8 @@ def homepage():
 
 @app.route('/about/')
 def about():
-	flash("You are now Loged in")
+	flash("Hi login message")
+	flash("Hi login message again")
 	return render_template("/about.html")
 
 @app.route('/project/')
@@ -35,11 +36,19 @@ def contact():
 def post():
     return render_template("/post.html")
 
+@app.route('/login/', methods = ['GET','POST'])
+def login():
+    return render_template("/login.html")
+
 
 
 @app.errorhandler(404)
 def page_not_found(e):
 	return render_template('/404.html')
+
+@app.errorhandler(405)
+def method_not_found(e):
+	return render_template('/405.html')
 
 
 app.config.update(
