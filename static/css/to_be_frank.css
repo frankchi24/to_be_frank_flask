@@ -3,6 +3,23 @@
  * Copyright 2013-2016 Start Bootstrap
  * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap/blob/gh-pages/LICENSE)
  */
+
+
+/*frank's theme*/
+.alert {
+    position:fixed; 
+    top: 100px; 
+    right: 10px; 
+    z-index:9999; 
+    border-radius:15px
+}
+
+.btn {
+    border-radius: 10px;
+    margin-top: 10px;
+}
+/*frank's theme ends*/
+
 body {
   font-family: 'Lora', 'Times New Roman', serif;
   font-size: 20px;
@@ -35,16 +52,6 @@ a img:hover,
 a img:focus {
   cursor: zoom-in;
 }
-
-/*make the alert fixed at top*/
-.alert {
-    position:fixed; 
-    top: 100px; 
-    right: 10px; 
-    z-index:9999; 
-    border-radius:15px
-}
-
 blockquote {
   color: #777777;
   font-style: italic;
@@ -346,7 +353,7 @@ form .row:first-child .floating-label-form-group {
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 1px;
-  border-radius: 0;
+/*  border-radius: 0;*/
   padding: 15px 25px;
 }
 .btn-lg {

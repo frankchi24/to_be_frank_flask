@@ -1,4 +1,5 @@
-from flask import Flask, render_template, flash, session 
+# -*- coding: utf-8 -*-
+from flask import Flask, render_template, flash, session,request,url_for,redirect
 from content_management import Content
 
 TOPIC_DIC = Content()
@@ -16,12 +17,8 @@ def homepage():
 	
 	# except Exception as e:
 	# 	return str(e)
-
-
 @app.route('/about/')
 def about():
-	flash("Hi login message")
-	flash("Hi login message again")
 	return render_template("/about.html")
 
 @app.route('/project/')
@@ -30,7 +27,7 @@ def project():
 
 @app.route('/contact/')
 def contact():
-    return render_template("/contact.html")
+	return render_template("/contact.html")
 
 @app.route('/post/')
 def post():
@@ -38,10 +35,24 @@ def post():
 
 @app.route('/login/', methods = ['GET','POST'])
 def login():
-    return render_template("/login.html")
+	error = ''
+	try:
+		if request.method == "POST":
+			attempted_username = request.form['username']
+			attempted_password = request.form['password']
 
+			flash(attempted_username)
+			flash(attempted_password)
 
-
+			if attempted_username == "admin" and attempted_password == "password":
+				return redirect (url_for('post'))
+			else:
+				error = "Invalid, Try Again"
+		
+		return render_template("login.html", error = error)
+	except Exception as e:
+		return render_template("login.html", error = error)
+		
 @app.errorhandler(404)
 def page_not_found(e):
 	return render_template('/404.html')

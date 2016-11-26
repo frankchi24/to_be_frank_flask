@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-     {% block head %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,24 +26,10 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    {% endblock %}
 </head>
 
 <body>
-    <div class="container-fluid" style = "min-height:100% width:100%">
-        {% with messages = get_flashed_messages(flash_test) %}
-            {% if messages %}
-                {% for m in messages %}
-                <div class="alert alert-success alert-dismissible" role = "alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                {{ m }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+
         <!-- Navigation -->
     <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
         <div class="container-fluid">
@@ -82,7 +67,19 @@
         <!-- /.container -->
     </nav>
 
-    {% block content %}{% endblock %}
+    {% block content %}
+    <div class="container-fluid" style = "min-height:100% width:50%">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for m in messages %}
+                 <div class='alert alert-warning alert-dismissible' role = 'alert'>
+                 {{m}}
+                 </div>
+                 {% endfor %}
+             {% endif %}
+         {% endwith %}
+     </div>
+    {% endblock %}
         <!-- Footer -->
     <footer>
         <div class="container">

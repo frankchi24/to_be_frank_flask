@@ -2,11 +2,11 @@
 
 
 {% block content %}
-
+    
 
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/home-bg.jpg') }}')">
+    <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/building-header.jpg') }}')">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
@@ -19,17 +19,7 @@
             </div>
         </div>
     </header>
-    <div class="container-fluid" style = "min-height:100% width:50%">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for m in messages %}
-                <div class='alert alert-warning alert-dismissible' role = 'alert'>
-                {{m}}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+
     <!-- Main Content -->
     <div class="container">
         <div class="row">
