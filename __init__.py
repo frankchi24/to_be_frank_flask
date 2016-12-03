@@ -3,6 +3,11 @@ from flask import Flask, render_template, flash, session,request,url_for,redirec
 from content_management import Content
 from dbconnect import connection
 from wtforms import Form
+from passlib.hash import sha256_crypt
+from MySQLdb import escape_string as thwart
+import gc
+
+
 
 TOPIC_DIC = Content()
 
@@ -52,8 +57,34 @@ class RegistrationForm(Form):
 @app.route('/register/', methods = ['GET','POST'])
 def register_page():
 	try:
-		c, conn = connection()
-		return("okay")
+		form = RegistrationForm(request.form)
+
+		if request.method == "POST" and form.validate():
+			username = form.username.data
+			email = form.email.data
+			password = sha256_crypt.encrypt((str(form.password.data)))
+			c, conn = connection()
+			x = c.execute("SELECT * FROM users WHERE username = (%s)",
+				(thwart(username)))
+
+			if int(len(x)) > 0:
+				flash("That user name is taken, choose another one")
+				return render_template('regiter.html',form = form)
+			else:
+				c.execute("INCERT INTO users(username, password, email, tracking) VALUS(%s, %s, %s, %s)",
+				(thwart(username), thwart(password),thwart(email),thwart("/")))
+				conn.commit()
+				flash("Thanks for registrating")
+				c.close()
+				conn.close()
+				gc.collect() #clear unused cache
+				session['logged_in'] = True
+				session['username'] = username
+
+				return redirect(url_for('/post/'))
+
+		return render_template("register.html",form = form)
+
 	except Exception as e:
 		return(str(e))
 
