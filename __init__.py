@@ -2,7 +2,7 @@
 from flask import Flask, render_template, flash, session,request,url_for,redirect
 from content_management import Content
 from dbconnect import connection
-
+from wtforms import Form
 
 TOPIC_DIC = Content()
 
@@ -34,6 +34,20 @@ def contact():
 @app.route('/post/')
 def post():
     return render_template("/post.html")
+
+
+
+
+class RegistrationForm(Form):
+    username = TextField('Username', [validators.Length(min=4, max=20)])
+    email = TextField('Email Address', [validators.Length(min=6, max=50)])
+    password = PasswordField('New Password', [
+        validators.Required(),
+        validators.EqualTo('confirm', message='Passwords must match')
+    ])
+    confirm = PasswordField('Repeat Password')
+    accept_tos = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.Required()])
+
 
 @app.route('/register/', methods = ['GET','POST'])
 def register_page():
