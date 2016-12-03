@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session,request,url_for,redirect
 from content_management import Content
+from dbconnect import connection
+
 
 TOPIC_DIC = Content()
 
@@ -33,6 +35,14 @@ def contact():
 def post():
     return render_template("/post.html")
 
+@app.route('/register/', methods = ['GET','POST'])
+def register_page():
+	try:
+		c, conn = connection()
+		return("okay")
+	except Exception as e:
+		return(str(e))
+
 @app.route('/login/', methods = ['GET','POST'])
 def login():
 	error = ''
@@ -41,8 +51,8 @@ def login():
 			attempted_username = request.form['username']
 			attempted_password = request.form['password']
 
-			flash(attempted_username)
-			flash(attempted_password)
+			# flash(attempted_username)
+			# flash(attempted_password)
 
 			if attempted_username == "admin" and attempted_password == "password":
 				return redirect (url_for('post'))
