@@ -2,7 +2,7 @@
 from flask import Flask, render_template, flash, session,request,url_for,redirect
 from content_management import Content
 from dbconnect import connection
-from wtforms import Form
+from wtforms import Form, BooleanField,TextField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
@@ -45,48 +45,53 @@ def post():
 
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=20)])
+    
     email = TextField('Email Address', [validators.Length(min=6, max=50)])
+    
     password = PasswordField('New Password', [
         validators.Required(),
         validators.EqualTo('confirm', message='Passwords must match')
     ])
+    
     confirm = PasswordField('Repeat Password')
+    
     accept_tos = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.Required()])
 
 
 @app.route('/register/', methods = ['GET','POST'])
 def register_page():
-	try:
-		form = RegistrationForm(request.form)
+    try:
+        form = RegistrationForm(request.form)
 
-		if request.method == "POST" and form.validate():
-			username = form.username.data
-			email = form.email.data
-			password = sha256_crypt.encrypt((str(form.password.data)))
-			c, conn = connection()
-			x = c.execute("SELECT * FROM users WHERE username = (%s)",
-				(thwart(username)))
+        if request.method == "POST" and form.validate():
+            username  = form.username.data
+            email = form.email.data
+            password = sha256_crypt.encrypt((str(form.password.data)))
+            c, conn = connection()
+            x = c.execute("SELECT * FROM users WHERE username = '{0}';".format(thwart(username)))
+            
+            if int(x) > 0:
+                flash("That username is already taken, please choose another")
+                return render_template('register.html', form=form)
+            else:
+                c.execute("INSERT INTO users (username, password, email, tracking) VALUES ('{0}', '{1}', '{2}', '{3}');".format(thwart(username), thwart(password), thwart(email), thwart("/")))
+                
+                conn.commit()
+                flash("Thanks for registering!")
+                c.close()
+                conn.close()
+                gc.collect()
 
-			if int(len(x)) > 0:
-				flash("That user name is taken, choose another one")
-				return render_template('regiter.html',form = form)
-			else:
-				c.execute("INCERT INTO users(username, password, email, tracking) VALUS(%s, %s, %s, %s)",
-				(thwart(username), thwart(password),thwart(email),thwart("/")))
-				conn.commit()
-				flash("Thanks for registrating")
-				c.close()
-				conn.close()
-				gc.collect() #clear unused cache
-				session['logged_in'] = True
-				session['username'] = username
+                session['logged_in'] = True
+                session['username'] = username
 
-				return redirect(url_for('/post/'))
+                return redirect(url_for('/post/'))
 
-		return render_template("register.html",form = form)
+        return render_template("register.html", form=form)
 
-	except Exception as e:
-		return(str(e))
+    except Exception as e:
+        return(str(e))
+		
 
 @app.route('/login/', methods = ['GET','POST'])
 def login():
@@ -105,6 +110,7 @@ def login():
 				error = "Invalid, Try Again"
 		
 		return render_template("login.html", error = error)
+	
 	except Exception as e:
 		return render_template("login.html", error = error)
 		

@@ -2,17 +2,7 @@
 
 
 {% block content %}
-    <div class="container-fluid" style = "min-height:100% width:50%">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for m in messages %}
-                 <div class='alert alert-warning alert-dismissible' role = 'alert'>
-                 {{m}}
-                 </div>
-                 {% endfor %}
-             {% endif %}
-         {% endwith %}
-     </div>
+
 
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
