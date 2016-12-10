@@ -6,6 +6,36 @@ from wtforms import Form, BooleanField, TextField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
+from functools import wraps
+
+
+class RegistrationForm(Form):  # form class from wtfform
+    username = TextField('Username', [validators.Length(min=4, max=20)])
+
+    email = TextField('Email Address', [validators.Length(min=6, max=50)])
+
+    password = PasswordField('New Password', [
+        validators.Required(),
+        validators.EqualTo('confirm', message='Passwords must match')
+    ])
+
+    confirm = PasswordField('Repeat Password')
+
+    accept_tos = BooleanField(
+        'I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [
+            validators.Required()
+        ])
+
+
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash("You need to login first")
+            return redirect(url_for('login'))
+    return wrap
 
 
 TOPIC_DIC = Content()
@@ -42,24 +72,9 @@ def contact():
 
 
 @app.route('/post/')
+@login_required
 def post():
     return render_template("/post.html")
-
-
-class RegistrationForm(Form):
-    username = TextField('Username', [validators.Length(min=4, max=20)])
-
-    email = TextField('Email Address', [validators.Length(min=6, max=50)])
-
-    password = PasswordField('New Password', [
-        validators.Required(),
-        validators.EqualTo('confirm', message='Passwords must match')
-    ])
-
-    confirm = PasswordField('Repeat Password')
-
-    accept_tos = BooleanField(
-        'I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.Required()])
 
 
 @app.route('/register/', methods=['GET', 'POST'])
@@ -68,7 +83,7 @@ def register_page():
         form = RegistrationForm(request.form)
 
         if request.method == "POST" and form.validate():
-            username = form.username.data
+            username = form.username.data  # data would be what user typein
             email = form.email.data
             password = sha256_crypt.encrypt((str(form.password.data)))
             c, conn = connection()
@@ -94,7 +109,6 @@ def register_page():
                 return redirect(url_for('post'))
 
         return render_template("register.html", form=form)
-
     except Exception as e:
         return(str(e))
 
@@ -106,12 +120,12 @@ def login():
         c, conn = connection()
         if request.method == "POST":
             data = c.execute("SELECT * FROM users WHERE username = '{0}';"
-                .format(thwart(request.form['username'])))#username from database
+                             .format(thwart(request.form['username'])))  # username from database
 
-            data = c.fetchone()[2] #password
+            data = c.fetchone()[2]  # password
 
             if sha256_crypt.verify(request.form['password'], data):
-                session['logged_in'] = True 
+                session['logged_in'] = True
                 session['username'] = request.form['username']
                 session['admin'] = True
 
@@ -122,10 +136,19 @@ def login():
                 error = "Invalid credentials, try again"
         gc.collect()
         return render_template("login.html", error=error)
- 
+
     except Exception as e:
         error = str(e)
         return render_template("login.html", error=error)
+
+
+@app.route("/logout/")
+@login_required
+def logout():
+    session.clear()
+    flash("You have been logged out")
+    gc.collect
+    return redirect(url_for('homepage'))
 
 
 @app.errorhandler(404)

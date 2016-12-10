@@ -52,21 +52,38 @@
                         <a href="/about/">About Me</a>
                     </li>
                     <li>
-                        <a href="/login/">Log In</a>
-                    </li>
-                    <li>
-                        <a href="/register/">Register</a>
-                    </li>
-                    <li>
                         <a href="/contact/">Contact</a>
                     </li>
+                    {% if session.logged_in %}
+                    <li>
+                        <a href="/logout/">Log Out</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="/register/">Sign Up</a>
+                    </li>
+                    <li>
+                        <a href="/login/">Log In</a>
+                    </li>
+                    {% endif %}
+
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
         </div>
         <!-- /.container -->
     </nav>
-
+    <div class="container-fluid" style = "min-height:100% width:100%">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for m in messages %}
+                <div class='alert alert-success alert-dismissible' role = 'alert'>
+                {{m}}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     {% block content %}
     {% endblock %}
         <!-- Footer -->
