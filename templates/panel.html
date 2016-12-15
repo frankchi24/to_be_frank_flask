@@ -1,0 +1,41 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/about-bg.jpg') }}')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="page-heading">
+                        <h1>Admin Panel</h1>
+                        <hr class="small">
+                        <span class="subheading">Sumbit Post Here</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class = "container">
+        <h2> Submit Post</h2>
+        <br>
+        {% from "_formhelper.html" import render_field %}
+        <form method = post action= "/panel/">
+            <dl>
+                {{render_field(form.title) }}
+                {{render_field(form.sub_title) }}
+                {{render_field(form.author) }}
+                {{render_field(form.date) }}
+                {{render_field(form.post) }}
+            </dl>
+            <p><input type = submit value = Submit></p>
+        </form>
+
+        {% if error %}
+        <p class = "error"><strong>Error:</strong>{{ error }}</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

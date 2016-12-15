@@ -1,5 +1,7 @@
 
 
+# get content from the database
+
 def Content():
     TOPIC_DIC = [
         {

@@ -2,11 +2,12 @@
 from flask import Flask, render_template, flash, session, request, url_for, redirect
 from content_management import Content
 from dbconnect import connection
-from wtforms import Form, BooleanField, TextField, PasswordField, validators
+from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
 from functools import wraps
+from wtforms.fields.html5 import DateField
 
 
 class RegistrationForm(Form):  # form class from wtfform
@@ -25,6 +26,19 @@ class RegistrationForm(Form):  # form class from wtfform
         'I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [
             validators.Required()
         ])
+
+
+class post_submit(Form):
+    title = TextField(
+        'Title', [validators.Required(), validators.Length(min=4, max=20)])
+    sub_title = TextField(
+        'Subtitle', [validators.Required(), validators.Length(min=4, max=20)])
+    author = TextField(
+        'Author', [validators.Length(min=4, max=20)])
+    date = DateField('date', format='%Y-%m-%d')
+
+    post = TextAreaField(
+        'Post')
 
 
 def login_required(f):
@@ -58,23 +72,72 @@ def homepage():
 
 @app.route('/about/')
 def about():
-    return render_template("/about.html")
+    return render_template("about.html")
+
+
+# pagination
+
+
+@app.route('/panel/', methods=['GET', 'POST'])
+@login_required
+def panel():
+    try:
+        form = post_submit(request.form)
+        if request.method == "POST":
+            title = form.title.data
+            sub_title = form.sub_title.data
+            author = form.author.data
+            date = form.date.data
+            post = form.post.data
+            c, conn = connection()
+            c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
+                title, sub_title, author, date, post))
+            conn.commit()
+            flash("Thanks for posting!")
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('homepage'))
+        else:
+            return render_template("panel.html", form=form)
+    except Exception as e:
+        flash(str(e))
+        return(str(e))
+    return render_template("panel.html")
 
 
 @app.route('/project/')
 def project():
-    return render_template("/project.html")
+    return render_template("project.html")
 
 
 @app.route('/contact/')
 def contact():
-    return render_template("/contact.html")
+    return render_template("contact.html")
 
 
 @app.route('/post/')
-@login_required
 def post():
-    return render_template("/post.html")
+    c, conn = connection()
+    post_number = 1
+
+    c.execute(
+        "SELECT * FROM posts WHERE pid = '{0}';".format(post_number))
+    for row in c:
+        title = row[1]
+        sub_title = row[2]
+        author = row[3]
+        date_time = row[4]
+    conn.commit()
+    c.close()
+    conn.close()
+    gc.collect()
+
+    return render_template("post.html",
+                           title=title,
+                           sub_title=sub_title,
+                           author=author,
+                           date_time=date_time)
 
 
 @app.route('/register/', methods=['GET', 'POST'])
