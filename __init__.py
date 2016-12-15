@@ -91,7 +91,7 @@ def panel():
             post = form.post.data
             c, conn = connection()
             c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
-                title, sub_title, author, date, post))
+                title, sub_title, author, date, conn.escape_string(str(post))))
             conn.commit()
             flash("Thanks for posting!")
             c.close()
@@ -119,7 +119,7 @@ def contact():
 @app.route('/post/')
 def post():
     c, conn = connection()
-    post_number = 1
+    post_number = 2
 
     c.execute(
         "SELECT * FROM posts WHERE pid = '{0}';".format(post_number))
@@ -128,6 +128,7 @@ def post():
         sub_title = row[2]
         author = row[3]
         date_time = row[4]
+        post = row[5].decode('utf-8')
     conn.commit()
     c.close()
     conn.close()
@@ -137,7 +138,30 @@ def post():
                            title=title,
                            sub_title=sub_title,
                            author=author,
-                           date_time=date_time)
+                           date_time=date_time,
+                           post=post)
+
+
+# includes, dynamic urls
+# @app.route('/include_example/')
+# def include_example():
+#     try:
+#         return render_template("includes.html")
+#     except Exception, e:
+#         return(str(e))
+
+
+@app.route('/jinjia/')
+def jinjia():
+    try:
+        gc.collect()
+        data = [15, '15', 'Python is great', 'Python, Java, Php, Javascript',
+                '<p>Hi this is string in paragraph tag</p>',
+                '<p><strong>Hey there!</strong></p>'
+                ]
+        return render_template("jinjia.html", data=data)
+    except Exception as e:
+        return(str(e))
 
 
 @app.route('/register/', methods=['GET', 'POST'])
