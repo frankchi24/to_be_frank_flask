@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session, request, url_for, redirect
-from content_management import Content
 from dbconnect import connection
 from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField
 from passlib.hash import sha256_crypt
@@ -52,16 +51,31 @@ def login_required(f):
     return wrap
 
 
-TOPIC_DIC = Content()
-
 app = Flask(__name__)
 app.secret_key = "frankchi24"
 
 
 @app.route('/')
 def homepage():
-    return render_template("main.html", TOPIC_DIC=TOPIC_DIC)
+    try:
+        title_list = []
+        c, conn = connection()
+        c.execute(
+            "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC LIMIT 3 ;")
+        for row in c:
+            title_list.append({"title": row[1].decode('utf-8'),
+                               "sub_title": row[2].decode('utf-8'),
+                               "author": row[3].decode('utf-8'),
+                               "date_time": row[4]}
+                              )
+        conn.commit()
+        c.close()
+        conn.close()
+        gc.collect()
+        return render_template("main.html", title_list=title_list)
 
+    except Exception as e:
+        return 'main page error: ' + str(e)
     # another way to show error
     # try:
     # 	return render_template("main.html",TOPIC_DIC = TOPIC_DI)
@@ -75,20 +89,17 @@ def about():
     return render_template("about.html")
 
 
-# pagination
-
-
 @app.route('/panel/', methods=['GET', 'POST'])
 @login_required
 def panel():
     try:
         form = post_submit(request.form)
         if request.method == "POST":
-            title = form.title.data
-            sub_title = form.sub_title.data
-            author = form.author.data
+            title = form.title.data.encode('utf-8')
+            sub_title = form.sub_title.data.encode('utf-8')
+            author = form.author.data.encode('utf-8')
             date = form.date.data
-            post = form.post.data
+            post = form.post.data.encode('utf-8')
             c, conn = connection()
             c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
                 title, sub_title, author, date, conn.escape_string(str(post))))
@@ -97,12 +108,11 @@ def panel():
             c.close()
             conn.close()
             gc.collect()
-            return redirect(url_for('homepage'))
+            return redirect(url_for('post', post_name=title.decode('utf-8')))
         else:
             return render_template("panel.html", form=form)
     except Exception as e:
-        flash(str(e))
-        return(str(e))
+        return('Panel page error: ' + str(e))
     return render_template("panel.html")
 
 
@@ -116,52 +126,53 @@ def contact():
     return render_template("contact.html")
 
 
-@app.route('/post/')
-def post():
-    c, conn = connection()
-    post_number = 2
-
-    c.execute(
-        "SELECT * FROM posts WHERE pid = '{0}';".format(post_number))
-    for row in c:
-        title = row[1]
-        sub_title = row[2]
-        author = row[3]
-        date_time = row[4]
-        post = row[5].decode('utf-8')
-    conn.commit()
-    c.close()
-    conn.close()
-    gc.collect()
-
-    return render_template("post.html",
-                           title=title,
-                           sub_title=sub_title,
-                           author=author,
-                           date_time=date_time,
-                           post=post)
-
-
-# includes, dynamic urls
-# @app.route('/include_example/')
-# def include_example():
-#     try:
-#         return render_template("includes.html")
-#     except Exception, e:
-#         return(str(e))
-
-
-@app.route('/jinjia/')
-def jinjia():
+@app.route('/post/<string:post_name>/')
+def post(post_name):
     try:
+        c, conn = connection()
+        c.execute(
+            "SELECT * FROM posts WHERE title = '{0}';".format(post_name.encode('utf-8')))
+        for row in c:
+            title = row[1].decode('utf-8')
+            sub_title = row[2].decode('utf-8')
+            author = row[3].decode('utf-8')
+            date_time = row[4]
+            post = row[5].decode('utf-8')
+        conn.commit()
+        c.close()
+        conn.close()
         gc.collect()
-        data = [15, '15', 'Python is great', 'Python, Java, Php, Javascript',
-                '<p>Hi this is string in paragraph tag</p>',
-                '<p><strong>Hey there!</strong></p>'
-                ]
-        return render_template("jinjia.html", data=data)
-    except Exception as e:
-        return(str(e))
+
+        return render_template("post.html",
+                               title=title,
+                               sub_title=sub_title,
+                               author=author,
+                               date_time=date_time,
+                               post=post)
+    except Exception, e:
+        return('post page error: ' + str(e))
+
+
+@app.route('/all_posts/')
+def all_posts():
+    try:
+        title_list = []
+        c, conn = connection()
+        c.execute(
+            "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC;")
+        for row in c:
+            title_list.append({"title": row[1].decode('utf-8'),
+                               "sub_title": row[2].decode('utf-8'),
+                               "author": row[3].decode('utf-8'),
+                               "date_time": row[4]}
+                              )
+        conn.commit()
+        c.close()
+        conn.close()
+        gc.collect()
+        return render_template("all_posts.html", title_list=title_list)
+    except Exception, e:
+        return('All_posts page error: ' + str(e))
 
 
 @app.route('/register/', methods=['GET', 'POST'])
@@ -193,7 +204,7 @@ def register_page():
                 session['logged_in'] = True
                 session['username'] = username
 
-                return redirect(url_for('post'))
+                return redirect(url_for('homepage'))
 
         return render_template("register.html", form=form)
     except Exception as e:
@@ -214,11 +225,11 @@ def login():
             if sha256_crypt.verify(request.form['password'], data):
                 session['logged_in'] = True
                 session['username'] = request.form['username']
-                session['admin'] = True
-
                 flash("You are logged in")
+                if request.form['username'] == 'admin':
+                    session['admin'] = True
 
-                return redirect(url_for('post'))
+                return redirect(url_for('homepage'))
             else:
                 error = "Invalid credentials, try again"
         gc.collect()
