@@ -11,9 +11,9 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="site-heading">
-                        <h1>To Be Frank</h1>
+                        <h1>All Posts</h1>
                         <hr class="small">
-                        <span class="subheading">英文老師會寫程式</span>
+                        <span class="subheading">Enjoys!</span>
                     </div>
                 </div>
             </div>
@@ -31,23 +31,17 @@
                                 {{ t["title"] }}
                             </h2>
                             <h3 class="post-subtitle">
-                                {{ t["subtitle"] }}
+                                {{ t["sub_title"] }}
                             </h3>
                         </a>
-                        <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["time"] }}</p>
+                         <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["date_time"] }}</p>
                     </div>
                 <hr>
                 {% endfor %}
-                <!-- Pager -->
-                <ul class="pager">
-                    <li class="next">
-                        <a href="/all_posts/">All My Posts &rarr;</a>
-                    </li>
-                </ul>
+
             </div>
         </div>
     </div>
     <hr>
 
 {% endblock %}
-
