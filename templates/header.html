@@ -29,7 +29,6 @@
 </head>
 
 <body>
-
         <!-- Navigation -->
     <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
         <div class="container-fluid">
@@ -39,7 +38,13 @@
                     <span class="sr-only">Toggle navigation</span>
                     Menu <i class="fa fa-bars"></i>
                 </button>
+                {% if session.logged_in %}
+                <a class="navbar-brand" href="/">{{ session.username }}@frankchi</a>
+                {% elif session.admin %}
+                <a class="navbar-brand" href="/">admin@frankchi</a>
+                {% else %}
                 <a class="navbar-brand" href="/">@frankchi</a>
+                {% endif %}
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->

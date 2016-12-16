@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session, request, url_for, redirect
-from content_management import Content
 from dbconnect import connection
 from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField
 from passlib.hash import sha256_crypt
@@ -193,7 +192,7 @@ def register_page():
                 flash("That username is already taken, please choose another")
                 return render_template('register.html', form=form)
             else:
-                c.execute("INSERT INTO users (username, password, email, tracking) VALUES ('{0}', '{1}', '{2}', '{3}');".format(
+                c.execute("INSERT INTO users (username, password, email) VALUES ('{0}', '{1}', '{2}');".format(
                     thwart(username), thwart(password), thwart(email), thwart("/")))
 
                 conn.commit()
@@ -226,11 +225,11 @@ def login():
             if sha256_crypt.verify(request.form['password'], data):
                 session['logged_in'] = True
                 session['username'] = request.form['username']
-                session['admin'] = True
-
                 flash("You are logged in")
+                if request.form['username'] == 'admin':
+                    session['admin'] = True
 
-                return redirect(url_for('post'))
+                return redirect(url_for('homepage'))
             else:
                 error = "Invalid credentials, try again"
         gc.collect()
