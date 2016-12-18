@@ -25,122 +25,191 @@
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-</head>
+        <![endif]-->
+    </head>
 
-<body>
+    <body>
         <!-- Navigation -->
-    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
-        <div class="container-fluid">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header page-scroll">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    Menu <i class="fa fa-bars"></i>
-                </button>
-                {% if session.logged_in %}
-                <a class="navbar-brand" href="/">{{ session.username }}@frankchi</a>
-                {% elif session.admin %}
-                <a class="navbar-brand" href="/">admin@frankchi</a>
-                {% else %}
-                <a class="navbar-brand" href="/">@frankchi</a>
-                {% endif %}
-            </div>
-
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="/">Home</a>
-                    </li>
-                    <li>
-                        <a href="/about/">About Me</a>
-                    </li>
-                    <li>
-                        <a href="/contact/">Contact</a>
-                    </li>
+        <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header page-scroll">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        Menu <i class="fa fa-bars"></i>
+                    </button>
                     {% if session.logged_in %}
-                    <li>
-                        <a href="/logout/">Log Out</a>
-                    </li>
+                    <a class="navbar-brand" href="/">{{ session.username }}@frankchi</a>
+                    {% elif session.admin %}
+                    <a class="navbar-brand" href="/">admin@frankchi</a>
                     {% else %}
-                    <li>
-                        <a href="/register/">Sign Up</a>
-                    </li>
-                    <li>
-                        <a href="/login/">Log In</a>
-                    </li>
+                    <a class="navbar-brand" href="/">@frankchi</a>
                     {% endif %}
-
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-    <div class="container-fluid" style = "min-height:100% width:100%">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for m in messages %}
-                <div class='alert alert-success alert-dismissible' role = 'alert'>
-                {{m}}
                 </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    {% block content %}
-    {% endblock %}
-        <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <ul class="list-inline text-center">
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <a href="#">
-                                <span class="fa-stack fa-lg">
-                                    <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-                                </span>
-                            </a>
+                            <a href="/">Home</a>
                         </li>
                         <li>
-                            <a href="#">
-                                <span class="fa-stack fa-lg">
-                                    <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
-                                </span>
-                            </a>
+                            <a href="/about/">About Me</a>
                         </li>
                         <li>
-                            <a href="#">
-                                <span class="fa-stack fa-lg">
-                                    <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                                </span>
-                            </a>
+                            <a href="/contact/">Contact</a>
                         </li>
+                        {% if session.logged_in %}
+                        <li>
+                            <a href="/logout/">Log Out</a>
+                        </li>
+                        {% else %}
+                        <li>
+                            <a href="/register/">Sign Up</a>
+                        </li>
+                        <li>
+                            <a data-toggle="modal" data-target="#myModal">Log In</a>
+                        </li>
+                        {% endif %}
+
                     </ul>
-                    <p class="copyright text-muted">Copyright &copy; Your Website 2016</p>
                 </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container -->
+        </nav>
+
+        {% block content %}
+        {% endblock %}
+        <div class="container-fluid" style = "min-height:100% width:100%">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for m in messages %}
+            <div class='alert alert-success alert-dismissible' role = 'alert'>
+                {{m}}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        <div class="container">
+          <div class="row">
+            <div class="container">
+
+              <!-- Modal -->
+              <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+
+                  <!-- Modal content-->
+                  <!-- Mixins-->
+                  <div class="container">
+                    <div class="card"></div>
+                    <div class="card">
+                      <h1 class="title">Login</h1>
+                      <form>
+                        <div class="input-container">
+                          <input type="text" id="Username" required="required"/>
+                          <label for="Username">Username</label>
+                          <div class="bar"></div>
+                        </div>
+                        <div class="input-container">
+                          <input type="password" id="Password" required="required"/>
+                          <label for="Password">Password</label>
+                          <div class="bar"></div>
+                        </div>
+                        <div class="button-container">
+                          <button><span>Go</span></button>
+                        </div>
+                        <div class="footer"><a href="#">Forgot your password?</a></div>
+                      </form>
+                    </div>
+                    <div class="card alt">
+                      <div class="toggle"></div>
+                      <h1 class="title">Register
+                        <div class="close"></div>
+                      </h1>
+                      <form>
+                        <div class="input-container">
+                          <input type="text" id="Username" required="required"/>
+                          <label for="Username">Username</label>
+                          <div class="bar"></div>
+                        </div>
+                        <div class="input-container">
+                          <input type="password" id="Password" required="required" value = "{{ request.form.username }}"/>
+                          <label for="Password">Password</label>
+                          <div class="bar"></div>
+                        </div>
+                        <div class="input-container">
+                          <input type="password" id="Repeat Password" required="required" value = "{{ request.form.password }}"/>
+                          <label for="Repeat Password">Repeat Password</label>
+                          <div class="bar"></div>
+                        </div>
+                        <div class="button-container">
+                          <button><span>Next</span></button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="#">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; Your Website 2016</p>
             </div>
         </div>
-    </footer>
-    
-    <!-- jQuery -->
-    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    </div>
+</footer>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+<!-- jQuery -->
+<script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
 
-    <!-- Contact Form JavaScript -->
-    <script src="{{ url_for('static', filename='js/jqBootstrapValidation.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/contact_me.js') }}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+
+<!-- Contact Form JavaScript -->
+<script src="{{ url_for('static', filename='js/jqBootstrapValidation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/contact_me.js') }}"></script>
+<script src="{{ url_for('static', filename='js/login_form.js') }}"></script>
 
 
-    <!-- Theme JavaScript -->
-    <script src="{{ url_for('static', filename='js/clean-blog.min.js') }}"></script>
+<!-- Theme JavaScript -->
+<script src="{{ url_for('static', filename='js/clean-blog.min.js') }}"></script>
 </body>
 
 </html>
