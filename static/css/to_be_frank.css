@@ -361,7 +361,7 @@ form .row:first-child .floating-label-form-group {
   letter-spacing: 1px;
   padding: 15px 25px;
   background-color: white;
-  border-radius: 0;
+  border-radius: 15px;
 }
 .pager li > a:hover,
 .pager li > a:focus {
@@ -485,12 +485,12 @@ body {
 }j
 
 /* Container */
-/*.container {
+.container {
   position: relative;
   max-width: 460px;
   width: 100%;
   margin: 0 auto 100px;
-}*/
+}
 .container.active .card:first-child {
   background: #f2f2f2;
   margin: 0 15px;
@@ -591,7 +591,7 @@ body {
 }
 .card .input-container {
   position: relative;
-  margin: 0 60px 50px;
+  margin: 0 60px 30px;
 }
 .card .input-container input {
   outline: none;
