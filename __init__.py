@@ -124,8 +124,8 @@ def panel():
             sub_title = form.sub_title.data.encode('utf-8')
             author = form.author.data.encode('utf-8')
             date = form.date.data
-            post = form.pagedown.data.encode('utf-8')
-            post = markdown(post)
+            post = markdown(form.pagedown.data).encode('utf-8')
+
             c, conn = connection()
             c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
                 title, sub_title, author, date, post))
