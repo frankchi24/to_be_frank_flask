@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session, request, url_for, redirect, send_file, send_from_directory, jsonify
 from dbconnect import connection
-from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField
+from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField, SubmitField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
@@ -11,6 +11,9 @@ from flask_mail import Mail, Message
 import smtplib
 import os
 import pygal
+from flask_misaka import markdown
+from flask_pagedown import PageDown
+from flask_pagedown.fields import PageDownField
 
 
 class RegistrationForm(Form):
@@ -33,9 +36,7 @@ class post_submit(Form):
     author = TextField(
         'Author', [validators.Length(min=4, max=20)])
     date = DateField('date', format='%Y-%m-%d')
-
-    post = TextAreaField(
-        'Post')
+    pagedown = PageDownField('Enter your markdown')
 
 
 def admin_required(f):
@@ -74,6 +75,7 @@ app.config.update(
     MAIL_PASSWORD='ppzc jgyf ihrx dbov'
 )
 mail = Mail(app)
+pagedown = PageDown(app)
 
 
 @app.route('/')
@@ -122,10 +124,11 @@ def panel():
             sub_title = form.sub_title.data.encode('utf-8')
             author = form.author.data.encode('utf-8')
             date = form.date.data
-            post = form.post.data.encode('utf-8')
+            post = form.pagedown.data.encode('utf-8')
+            post = markdown(post)
             c, conn = connection()
             c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
-                title, sub_title, author, date, conn.escape_string(str(post))))
+                title, sub_title, author, date, post))
             conn.commit()
             flash("Thanks for posting!")
             c.close()
@@ -274,7 +277,8 @@ def send_mail():
                       recipients=["frankchi25@gmail.com"])
         msg.body = "So you wanna receive the new email!!"
         mail.send(msg)
-        return 'Mail sent!'
+        flash('Mail Sent')
+        return redirect(url_for('homepage'))
     except Exception, e:
         return(str(e))
 

@@ -421,6 +421,11 @@ body {
   max-width: 600px;
   border-top: 0px;
 }
+
+#flask-pagedown-pagedown {
+
+  width:1000px;
+}
 /*frank's theme ends*/
 
 

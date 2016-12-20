@@ -2,6 +2,7 @@
 
 
 {% block content %}
+
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
     <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/about-bg.jpg') }}')">
@@ -21,14 +22,17 @@
     <div class = "container">
         <h2> Submit Post</h2>
         <br>
-        {% from "_formhelper.html" import render_field %}
+        
+        {% from "_formhelpers.html" import render_field %}
+          {{ pagedown.include_pagedown() }}
         <form method = post action= "/panel/">
             <dl>
                 {{render_field(form.title) }}
                 {{render_field(form.sub_title) }}
                 {{render_field(form.author) }}
                 {{render_field(form.date) }}
-                {{render_field(form.post) }}
+                <dd>Post
+                {{form.pagedown(rows=20)}}
             </dl>
             <p><input type = submit value = Submit></p>
         </form>
