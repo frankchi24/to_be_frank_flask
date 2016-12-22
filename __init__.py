@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session, request, url_for, redirect, send_file, send_from_directory, jsonify
-from dbconnect import connection
+from dbconnect import connection, connection_scripts
 from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField, SubmitField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
@@ -37,6 +37,11 @@ class post_submit(Form):
         'Author', [validators.Length(min=4, max=20)])
     date = DateField('date', format='%Y-%m-%d')
     pagedown = PageDownField('Enter your markdown')
+
+
+class yo(Form):
+    title = TextField(
+        'Title', [validators.Required(), validators.Length(min=2, max=20)])
 
 
 def admin_required(f):
@@ -269,20 +274,6 @@ def login():
         return render_template("login.html", error=error)
 
 
-@app.route('/send-mail/')
-def send_mail():
-    try:
-        msg = Message("Send Mail Tutorial!",
-                      sender="frankchi24@gmail.com",
-                      recipients=["frankchi25@gmail.com"])
-        msg.body = "So you wanna receive the new email!!"
-        mail.send(msg)
-        flash('Mail Sent')
-        return redirect(url_for('homepage'))
-    except Exception, e:
-        return(str(e))
-
-
 @app.route("/logout/")
 @login_required
 def logout():
@@ -290,6 +281,37 @@ def logout():
     flash("You have been logged out")
     gc.collect
     return redirect(url_for('homepage'))
+
+
+# Search_Scripts Function
+
+@app.route('/scripts_search/', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def scripts_search():
+    try:
+        form = yo(request.form)
+        c, conn = connection_scripts()
+        if request.method == "POST":
+            title = form.title.data.encode('utf-8')
+            select = request.form.get('select_show').encode('utf-8')
+            if select == "all":
+                data = c.execute(
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%'".format(title))
+            else:
+                data = c.execute(
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND scripts LIKE'%{1}%'".format(select, title))
+            data = c.fetchall()
+            c.close()
+            conn.close()
+            gc.collect()
+            return render_template("search_results.html", data=data)
+        else:
+            return render_template("scripts_search.html", form=form)
+    except Exception as e:
+        return('Scripts search page error: ' + str(e))
+        # error page
+    return render_template("main.html")
 
 
 @app.route("/file_downloads/")
@@ -306,6 +328,20 @@ def return_files():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('/404.html')
+
+
+@app.route('/send-mail/')
+def send_mail():
+    try:
+        msg = Message("Send Mail Tutorial!",
+                      sender="frankchi24@gmail.com",
+                      recipients=["frankchi25@gmail.com"])
+        msg.body = "So you wanna receive the new email!!"
+        mail.send(msg)
+        flash('Mail Sent')
+        return redirect(url_for('homepage'))
+    except Exception, e:
+        return(str(e))
 
 
 @app.route('/protected/<path:filename>')

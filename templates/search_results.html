@@ -1,0 +1,56 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+
+<!-- Page Header -->
+<!-- Set your background image for this header on the line below. -->
+<header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/tv_show_background.jpg') }}')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="page-heading">
+                    <h1>Search Resutls</h1>
+                    <hr class="small">
+                    <span class="subheading">These are the results in </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<div class = "container">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <h2>
+                Results from TV show : {{ data[0][5] }}
+            </h2>
+            <br>
+    
+            {% for t in data %} 
+            <div class="post-preview">
+                <h3 class="post-subtitle">
+                    "{{ t[0] }}"
+                </h3>
+
+                <h5 class="post-title" style= "color:gray">
+                    {{ t[5] }} - Season {{ t[1] }}  Episode {{ t[2] }} {{ t[4]}}
+                </h5>
+            </div>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                  More Lines
+              </button>
+            <div class="collapse" id="collapseExample">
+                  <div class="well">
+                    {{ t[5] }} - Season {{ t[1] }}  Episode {{ t[2] }} {{ t[4]}}
+                </div>
+            </div>
+        <hr>
+        {% endfor %}
+
+    </div>
+</div>
+</div>
+
+{% endblock %}
