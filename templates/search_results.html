@@ -31,19 +31,19 @@
             {% for t in data %} 
             <div class="post-preview">
                 <h3 class="post-subtitle">
-                    "{{ t[0] }}"
+                    <a type="button" data-toggle="collapse" data-target="#{{ t['sid'] }}" aria-expanded="false" aria-controls="{{ t['sid'] }}">"{{ t["scripts"] }}"</a>
                 </h3>
 
                 <h5 class="post-title" style= "color:gray">
-                    {{ t[5] }} - Season {{ t[1] }}  Episode {{ t[2] }} {{ t[4]}}
+                    {{ t["show_name"] }} - Season {{ t["season"] }}  Episode {{ t["epinumber"] }} {{ t["time_stamp"]}}
                 </h5>
             </div>
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                  More Lines
-              </button>
-            <div class="collapse" id="collapseExample">
+
+            <div class="collapse" id="{{ t['sid'] }}">
                   <div class="well">
-                    {{ t[5] }} - Season {{ t[1] }}  Episode {{ t[2] }} {{ t[4]}}
+                  {% for context in t['context'] %} 
+                  {{  context['scripts'] }}
+                  {% endfor %}
                 </div>
             </div>
         <hr>

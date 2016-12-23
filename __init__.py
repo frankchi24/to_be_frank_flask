@@ -39,7 +39,7 @@ class post_submit(Form):
     pagedown = PageDownField('Enter your markdown')
 
 
-class yo(Form):
+class search(Form):
     title = TextField(
         'Title', [validators.Required(), validators.Length(min=2, max=20)])
 
@@ -50,6 +50,7 @@ def admin_required(f):
         if 'admin' == session['username']:
             return f(*args, **kwargs)
         else:
+            flash("You need to login first")
             return redirect(url_for('login'))
     return wrap
 
@@ -290,26 +291,57 @@ def logout():
 @admin_required
 def scripts_search():
     try:
-        form = yo(request.form)
+        form = search(request.form)
         c, conn = connection_scripts()
         if request.method == "POST":
             title = form.title.data.encode('utf-8')
             select = request.form.get('select_show').encode('utf-8')
+
+            result_list = []
             if select == "all":
-                data = c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%'".format(title))
+                c.execute(
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%' LIMIT 100".format(title))
             else:
-                data = c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND scripts LIKE'%{1}%'".format(select, title))
-            data = c.fetchall()
+                c.execute(
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND scripts LIKE'%{1}%'LIMIT 100".format(select, title))
+
+            for row in c:
+                result_list.append({"scripts": row[0].decode('utf-8'),
+                                    "season": row[1],
+                                    "epinumber": row[2],
+                                    "position": row[3],
+                                    "time_stamp": row[4],
+                                    "show_name": row[5].decode('utf-8'),
+                                    "sid": row[6]}
+                                   )
+
+            for item in result_list:
+                context_result_list = []
+                sid = item["sid"]
+                c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 2)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 2)ORDER BY position ASC;""".format(
+                    sid, sid))
+                for new_row in c:
+                    test_dic = {}
+                    test_dic["position"] = new_row[0]
+                    test_dic["time_stamp"] = new_row[1]
+                    test_dic["scripts"] = new_row[2].decode('utf-8')
+                    test_dic["sid"] = new_row[3]
+                    context_result_list.append(test_dic)
+                item["context"] = context_result_list
+                # shoud be a list of dics
+            data = result_list
             c.close()
             conn.close()
             gc.collect()
-            return render_template("search_results.html", data=data)
+            return render_template("search_results.html",
+                                   data=data
+                                   )
         else:
             return render_template("scripts_search.html", form=form)
     except Exception as e:
-        return('Scripts search page error: ' + str(e))
+        flash("Sorry, can't find any match.")
+        return render_template("scripts_search.html", form=form)
+        # return('Scripts search page error: ' + str(e))
         # error page
     return render_template("main.html")
 
