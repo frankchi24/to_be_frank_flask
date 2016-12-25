@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, flash, session, request, url_for, redirect, send_file, send_from_directory, jsonify
 from dbconnect import connection, connection_scripts
-from wtforms import Form, BooleanField, TextField, PasswordField, validators, DateField, TextAreaField, SubmitField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, DateField, TextAreaField, SubmitField
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
@@ -17,8 +17,8 @@ from flask_pagedown.fields import PageDownField
 
 
 class RegistrationForm(Form):
-    username = TextField('Username', [validators.Length(min=4, max=20)])
-    email = TextField('Email Address', [validators.Length(min=6, max=50)])
+    username = StringField('Username', [validators.Length(min=4, max=20)])
+    email = StringField('Email Address', [validators.Length(min=6, max=50)])
     password = PasswordField('New Password', [
         validators.Required(),
         validators.EqualTo('confirm', message='Passwords must match')
@@ -29,19 +29,16 @@ class RegistrationForm(Form):
 
 
 class post_submit(Form):
-    title = TextField(
-        'Title', [validators.Required(), validators.Length(min=4, max=20)])
-    sub_title = TextField(
-        'Subtitle', [validators.Required(), validators.Length(min=4, max=20)])
-    author = TextField(
-        'Author', [validators.Length(min=4, max=20)])
+    title = StringField(
+        'Title', [validators.Required(), validators.Length(min=1, max=20)])
+    sub_title = StringField('Subtitle')
+    author = StringField('Author', [validators.Length(min=1, max=20)])
     date = DateField('date', format='%Y-%m-%d')
     pagedown = PageDownField('Enter your markdown')
 
 
 class search(Form):
-    title = TextField(
-        'Title', [validators.Required(), validators.Length(min=2, max=20)])
+    title = StringField('title', [validators.Length(min=3, max=20)])
 
 
 def admin_required(f):
@@ -148,11 +145,6 @@ def panel():
     return render_template("panel.html")
 
 
-@app.route('/project/')
-def project():
-    return render_template("project.html")
-
-
 @app.route('/contact/')
 def contact():
     return render_template("contact.html")
@@ -185,8 +177,8 @@ def post(post_name):
         return('post page error: ' + str(e))
 
 
-@app.route('/all_posts/')
-def all_posts():
+@app.route('/blog_archive/')
+def blog_archive():
     try:
         title_list = []
         c, conn = connection()
@@ -202,7 +194,7 @@ def all_posts():
         c.close()
         conn.close()
         gc.collect()
-        return render_template("all_posts.html", title_list=title_list)
+        return render_template("blog_archive.html", title_list=title_list)
     except Exception, e:
         return('All_posts page error: ' + str(e))
 
@@ -271,8 +263,10 @@ def login():
         return render_template("login.html", error=error)
 
     except Exception as e:
-        error = str(e)
-        return render_template("login.html", error=error)
+        # error = str(e)
+        # return render_template("login.html", error=error)
+        flash("Invalid credentials, try again")
+        return redirect(url_for('homepage'))
 
 
 @app.route("/logout/")
@@ -286,6 +280,7 @@ def logout():
 
 # Search_Scripts Function
 
+
 @app.route('/scripts_search/', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -293,17 +288,17 @@ def scripts_search():
     try:
         form = search(request.form)
         c, conn = connection_scripts()
-        if request.method == "POST":
+        if request.method == "POST" and form.validate():
             title = form.title.data.encode('utf-8')
             select = request.form.get('select_show').encode('utf-8')
 
             result_list = []
             if select == "all":
                 c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%' LIMIT 100".format(title))
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%' LIMIT 100".format(conn.escape_string(title)))
             else:
                 c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND scripts LIKE'%{1}%'LIMIT 100".format(select, title))
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE'% {1}[,.!?-~)( ]' OR scripts LIKE'% {2}%')LIMIT 100".format(select, conn.escape_string(title), conn.escape_string(title)))
 
             for row in c:
                 result_list.append({"scripts": row[0].decode('utf-8'),
@@ -314,6 +309,7 @@ def scripts_search():
                                     "show_name": row[5].decode('utf-8'),
                                     "sid": row[6]}
                                    )
+            # put search result into a list of dictionaries
 
             for item in result_list:
                 context_result_list = []
@@ -328,8 +324,11 @@ def scripts_search():
                     test_dic["sid"] = new_row[3]
                     context_result_list.append(test_dic)
                 item["context"] = context_result_list
-                # shoud be a list of dics
+            # for each of the search result, get 4 lines of context and add as
+            # the last dic in result_list
+
             data = result_list
+
             c.close()
             conn.close()
             gc.collect()
@@ -339,9 +338,9 @@ def scripts_search():
         else:
             return render_template("scripts_search.html", form=form)
     except Exception as e:
-        flash("Sorry, can't find any match.")
-        return render_template("scripts_search.html", form=form)
-        # return('Scripts search page error: ' + str(e))
+        # flash("Sorry, can't find any match.")
+        # return render_template("scripts_search.html", form=form)
+        return('Scripts search page error: ' + str(e))
         # error page
     return render_template("main.html")
 

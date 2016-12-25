@@ -3,43 +3,38 @@
 
 {% block content %}
 
-    <!-- Page Header -->
-    <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/tv_show_background.jpg') }}')">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <div class="page-heading">
-                        <h1>Search Scripts</h1>
-                        <hr class="small">
-                        <span class="subheading">Search Through Scripts</span>
-                    </div>
+<!-- Page Header -->
+<!-- Set your background image for this header on the line below. -->
+<header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/post-bg.jpg') }}')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="page-heading">
+                    <h1>Search Scripts</h1>
+                    <hr class="small">
+                    <span class="subheading">Search Through Scripts</span>
+
                 </div>
+                {% from "_formhelpers.html" import render_field %}
+                <form method = "POST" action= "/scripts_search/">
+                    <dl>
+                        {{render_field(form.title) }}
+                        <br>
+                        <select name="select_show">
+                            <option value="How I Met Your Mother">How I Met Your Mother</option>
+                            <option value="House of Cards">House of Cards</option>
+                            <option value="all">All</option>             
+                        </select>
+                    </dl>
+                    <p><input type = submit value = Submit></p>
+                </form>
+                {% if error %}
+                <p class = "error"><strong>Error:</strong>{{ error }}</p>
+                {% endif %}
             </div>
         </div>
-    </header>
-
-    <div class = "container">
-        <h2> Submit Search</h2>
-        <br>
-        
-        {% from "_formhelpers.html" import render_field %}
-        <form method = "POST" action= "/scripts_search/">
-            <dl>
-                {{render_field(form.title) }}
-                <br>
-                <select name="select_show">
-                    <option value="How I Met Your Mother">How I Met Your Mother</option>
-                    <option value="House of Cards">House of Cards</option>
-                    <option value="all">All</option>             
-                </select>
-            </dl>
-            <p><input type = submit value = Submit></p>
-        </form>
-
-        {% if error %}
-        <p class = "error"><strong>Error:</strong>{{ error }}</p>
-        {% endif %}
     </div>
+</header>
+
 
 {% endblock %}
