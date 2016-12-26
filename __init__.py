@@ -295,13 +295,18 @@ def scripts_search():
             result_list = []
             if select == "all":
                 c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE'%{0}%' LIMIT 100".format(conn.escape_string(title)))
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%' LIMIT 100".format(select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
             else:
                 c.execute(
-                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE'% {1}[,.!?-~)( ]' OR scripts LIKE'% {2}%')LIMIT 100".format(select, conn.escape_string(title), conn.escape_string(title)))
+                    "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%') LIMIT 100".format(select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
 
             for row in c:
-                result_list.append({"scripts": row[0].decode('utf-8'),
+                try:
+                    scripts_decode = row[0].decode('utf-8')
+                except UnicodeDecodeError:
+                    scripts_decode = row[0].decode('latin-1')
+                    # handle some substring using latin-1 decoding
+                result_list.append({"scripts": scripts_decode,
                                     "season": row[1],
                                     "epinumber": row[2],
                                     "position": row[3],
@@ -320,7 +325,12 @@ def scripts_search():
                     test_dic = {}
                     test_dic["position"] = new_row[0]
                     test_dic["time_stamp"] = new_row[1]
-                    test_dic["scripts"] = new_row[2].decode('utf-8')
+                    try:
+                        scripts_decode = new_row[2].decode('utf-8')
+                    except UnicodeDecodeError:
+                        scripts_decode = new_row[2].decode('latin-1')
+                    # handle some substring using latin-1 decoding
+                    test_dic["scripts"] = scripts_decode
                     test_dic["sid"] = new_row[3]
                     context_result_list.append(test_dic)
                 item["context"] = context_result_list
