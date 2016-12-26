@@ -288,6 +288,10 @@ def scripts_search():
     try:
         form = search(request.form)
         c, conn = connection_scripts()
+        list_of_show = []
+        c.execute("SELECT DISTINCT show_name FROM scripts;")
+        for show in c:
+            list_of_show.append(show)
         if request.method == "POST" and form.validate():
             title = form.title.data.encode('utf-8')
             select = request.form.get('select_show').encode('utf-8')
@@ -346,11 +350,11 @@ def scripts_search():
                                    data=data
                                    )
         else:
-            return render_template("scripts_search.html", form=form)
+            return render_template("scripts_search.html", form=form, list_of_show=list_of_show)
     except Exception as e:
-        # flash("Sorry, can't find any match.")
-        # return render_template("scripts_search.html", form=form)
-        return('Scripts search page error: ' + str(e))
+        flash("Sorry, can't find any match.")
+        return render_template("scripts_search.html", form=form)
+        # return('Scripts search page error: ' + str(e))
         # error page
     return render_template("main.html")
 
