@@ -21,8 +21,9 @@
                         {{render_field(form.title) }}
                         <br>
                         <select name="select_show">
-                            <option value="How I Met Your Mother">How I Met Your Mother</option>
-                            <option value="House of Cards">House of Cards</option>
+                            {% for show in list_of_show %}
+                            <option value="{{ show[0] }}">{{ show[0] }}</option>
+                            {% endfor %}
                             <option value="all">All</option>             
                         </select>
                     </dl>
