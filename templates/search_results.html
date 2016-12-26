@@ -23,9 +23,9 @@
 
 <div class = "container">
     <div class="row">
-        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="col-lg-8 col-md-10 col-md-offset-1">
             <h2>
-                Results from TV show : {{ data[0][5] }}
+                Results from TV show : {{ data[0]['show_name'] }}
             </h2>
             <br>
     
@@ -49,6 +49,16 @@
             </div>
         <hr>
         {% endfor %}
+
+    </div>
+    <div class="col-lg-2 col-md-10 col-md-offset-1">
+    <h3>History:</h3>
+
+    <ul>
+    {% for h in history %} 
+    <li>{{ h }}</li>
+     {% endfor %}
+     </ul>
 
     </div>
 </div>
