@@ -28,7 +28,7 @@
                 Results from TV show : {{ data[0]['show_name'] }}
             </h2>
             <br>
-    
+            
             {% for t in data %} 
             <div class="post-preview">
                 <h3 class="post-subtitle">
@@ -41,24 +41,23 @@
             </div>
 
             <div class="collapse" id="{{ t['sid'] }}">
-                  <div class="well">
+              <div class="well">
                   {% for context in t['context'] %} 
                   {{  context['scripts'] }}
                   {% endfor %}
-                </div>
-            </div>
-        <hr>
-        {% endfor %}
+              </div>
+          </div>
+          <hr>
+          {% endfor %}
 
-    </div>
-    <div class="col-lg-2 col-md-10 col-md-offset-1">
-    <h3>History:</h3>
-
-    <ul>
-    {% for h in history %} 
-    <li>{{ h }}</li>
-     {% endfor %}
-     </ul>
+      </div>
+      <div class="col-lg-2 col-md-10 col-md-offset-1">
+        <h3>History:</h3>
+        <ul>
+   <!--          {% for h in session.search_history %} 
+            <li>{{ h }}</li>
+            {% endfor %} -->
+        </ul>
 
     </div>
 </div>

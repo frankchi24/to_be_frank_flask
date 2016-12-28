@@ -61,7 +61,12 @@
                 <li>
                   <a href="/scripts_search/">TV Show</a>
                 </li>
-                
+                {% if session.admin %}
+                <li>
+                  <a href="/panel/">Admin Panel</a>
+                </li>
+                {% endif %}
+
                 <li>
                   <a href="/logout/">Log Out</a>
                 </li>
