@@ -428,6 +428,11 @@ body {
   width:1000px;
 }
 
+.context_scripts {
+    line-height: 1.0;
+    margin: 20px 0;
+}
+
 /*#search #title {
   padding: 10px 500px 10px 0px;
 }

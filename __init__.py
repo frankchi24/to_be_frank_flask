@@ -53,6 +53,17 @@ def admin_required(f):
     return wrap
 
 
+def get_list_of_shows():
+    c, conn = connection_scripts()
+    list_of_show = []
+    c.execute("SELECT DISTINCT show_name FROM scripts;")
+    for show in c:
+        list_of_show.append(show)
+    c.close()
+    conn.close()
+    return list_of_show
+
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -64,16 +75,16 @@ def login_required(f):
     return wrap
 
 
-# def search_history(query):
-#     history = cache.get('search_history')
-#     if history is None:
-#         starting_list = [query]
-#         cache.set('search_history', starting_list, timeout=30 * 60)
-#         return cache.get('search_history')
-#     else:
-#         new_list = history.append(query)
-#         cache.set('search_history', new_list, timeout=30 * 60)
-#         return cache.get('search_history')
+def search_history(query):
+    history = cache.get('search_history')
+    if history is None:
+        starting_list = [query]
+        cache.set('search_history', starting_list)
+        return cache.get('search_history')
+    else:
+        new_history = history.append(query)
+        cache.add('search_history', new_history, timeout=None)
+        return cache.get('search_history')
 
 app = Flask(
     __name__, instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected')
@@ -305,14 +316,8 @@ def scripts_search():
     try:
         form = search(request.form)
 
+        list_of_show = get_list_of_shows()
         # get the list of all shows in databases
-        c, conn = connection_scripts()
-        list_of_show = []
-        c.execute("SELECT DISTINCT show_name FROM scripts;")
-        for show in c:
-            list_of_show.append(show)
-        c.close()
-        conn.close()
 
         if request.method == "POST" and form.validate():
             title = form.title.data
@@ -322,9 +327,6 @@ def scripts_search():
             return render_template("scripts_search.html", form=form, list_of_show=list_of_show)
 
     except Exception as e:
-        # flash("Sorry, can't find any match.")
-        # return render_template("scripts_search.html", form=form,
-        # list_of_show=list_of_show)
         flash(e)
         return('Scripts search page error: ' + str(e))
         # error page
@@ -332,6 +334,8 @@ def scripts_search():
 
 @app.route("/search_results/<string:select>/<string:title>")
 def search_results(title, select):
+    form = search(request.form)
+    list_of_show = get_list_of_shows()
     try:
         title = title.encode('utf-8')
         select = select.encode('utf-8')
@@ -363,18 +367,19 @@ def search_results(title, select):
         for item in result_list:
             context_result_list = []
             sid = item["sid"]
-            c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 2)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 2)ORDER BY position ASC;""".format(
+            c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 3)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 3)ORDER BY position ASC;""".format(
                 sid, sid))
             for new_row in c:
                 test_dic = {}
                 test_dic["position"] = new_row[0]
                 test_dic["time_stamp"] = new_row[1]
+                test_dic["scripts"] = []
                 try:
-                    scripts_decode = new_row[2].decode('utf-8')
+                    context_scripts_decode = new_row[2].decode('utf-8')
                 except UnicodeDecodeError:
-                    scripts_decode = new_row[2].decode('latin-1')
+                    context_scripts_decode = new_row[2].decode('latin-1')
                 # handle some substring using latin-1 decoding
-                test_dic["scripts"] = scripts_decode
+                test_dic["scripts"].append(context_scripts_decode)
                 test_dic["sid"] = new_row[3]
                 context_result_list.append(test_dic)
             item["context"] = context_result_list
@@ -395,6 +400,9 @@ def search_results(title, select):
         return render_template("search_results.html", data=data)
     except Exception as e:
         return('Search result page error: ' + str(e))
+        # flash("Sorry, can't find any match.")
+        # return render_template("scripts_search.html", form=form,
+        #                        list_of_show=list_of_show)
 
 
 @app.route("/file_downloads/")
