@@ -5,29 +5,31 @@
 
 <!-- Page Header -->
 <!-- Set your background image for this header on the line below. -->
-<header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/post-bg.jpg') }}')">
+<header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/tv_show_background.jpg') }}')">
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                <div class="page-heading">
+                <div id = "search-heading" class="page-heading">
                     <h1>Search Scripts</h1>
                     <hr class="small">
                     <span class="subheading">Search Through Scripts</span>
 
                 </div>
-                {% from "_formhelpers.html" import render_field %}
-                <form method = "POST" action= "/scripts_search/">
+                {% from "_formhelpers2.html" import render_field %}
+                <form  id = "search-form" method = "POST" action= "/scripts_search/">
                     <dl>
                         {{render_field(form.title) }}
                         <br>
-                        <select name="select_show">
+                        <select id= "select" name="select_show">
+                            <option value="all">All</option>     
                             {% for show in list_of_show %}
                             <option value="{{ show[0] }}">{{ show[0] }}</option>
-                            {% endfor %}
-                            <option value="all">All</option>             
+                            {% endfor %}        
                         </select>
+                        <p><input type = submit value = Submit></p>
+
                     </dl>
-                    <p><input type = submit value = Submit></p>
+                    
                 </form>
                 {% if error %}
                 <p class = "error"><strong>Error:</strong>{{ error }}</p>

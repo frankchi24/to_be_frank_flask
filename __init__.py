@@ -59,6 +59,7 @@ def get_list_of_shows():
     c.execute("SELECT DISTINCT show_name FROM scripts;")
     for show in c:
         list_of_show.append(show)
+
     c.close()
     conn.close()
     return list_of_show
@@ -85,6 +86,63 @@ def search_history(query):
         new_history = history.append(query)
         cache.add('search_history', new_history, timeout=None)
         return cache.get('search_history')
+
+
+def search_scripts_database(c, conn, select, title, result_list):
+    if select == "all":
+        c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%' LIMIT 100".format(
+            select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
+    else:
+        c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%') LIMIT 100".format(
+            select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
+    for row in c:
+        try:
+            scripts_decode = row[0].decode('utf-8')
+        except UnicodeDecodeError:
+            scripts_decode = row[0].decode('latin-1')
+            # handle some substring using latin-1 decoding
+        result_list.append({"scripts": scripts_decode,
+                            "season": row[1],
+                            "epinumber": row[2],
+                            "position": row[3],
+                            "time_stamp": row[4],
+                            "show_name": row[5].decode('utf-8'),
+                            "sid": row[6]}
+                           )
+    # put search result into a list of dictionaries
+        for item in result_list:
+            context_result_list = []
+            sid = item["sid"]
+            c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 2)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 2)ORDER BY position ASC;""".format(
+                sid, sid))
+            for new_row in c:
+                test_dic = {}
+                test_dic["position"] = new_row[0]
+                test_dic["time_stamp"] = new_row[1]
+                test_dic["scripts"] = []
+                try:
+                    context_scripts_decode = new_row[2].decode('utf-8')
+                except UnicodeDecodeError:
+                    context_scripts_decode = new_row[2].decode('latin-1')
+                # handle some substring using latin-1 decoding
+                test_dic["scripts"].append(context_scripts_decode)
+                test_dic["sid"] = new_row[3]
+                context_result_list.append(test_dic)
+            item["context"] = context_result_list
+            # for each of the search result, get 4 lines of context and add as
+            # the last dic in result_list
+    return result_list
+
+
+def header_image_path(title):
+    header_pic_path = {"How I Met Your Mother": 'img/tv_show_background.jpg',
+                       "House of Cards": 'img/tv_show_background.jpg',
+                       "Suits": 'img/tv_show_background.jpg',
+                       "Mad Men": 'img/tv_show_background.jpg',
+                       "The Big Bang Theory": 'img/tv_show_background.jpg',
+                       }
+    path = header_pic_path[title]
+    return path
 
 app = Flask(
     __name__, instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected')
@@ -229,7 +287,6 @@ def blog_archive():
 def register_page():
     try:
         form = RegistrationForm(request.form)
-
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
@@ -315,10 +372,8 @@ def logout():
 def scripts_search():
     try:
         form = search(request.form)
-
         list_of_show = get_list_of_shows()
         # get the list of all shows in databases
-
         if request.method == "POST" and form.validate():
             title = form.title.data
             select = request.form.get('select_show')
@@ -334,57 +389,22 @@ def scripts_search():
 
 @app.route("/search_results/<string:select>/<string:title>")
 def search_results(title, select):
-    form = search(request.form)
-    list_of_show = get_list_of_shows()
     try:
+        form = search(request.form)
+        list_of_show = get_list_of_shows()
+
+        if request.method == "POST" and form.validate():
+            title = form.title.data
+            select = request.form.get('select_show')
+
+            return redirect(url_for('search_results', title=title, select=select))
+
         title = title.encode('utf-8')
         select = select.encode('utf-8')
         result_list = []
         c, conn = connection_scripts()
-
-        if select == "all":
-            c.execute(
-                "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%' LIMIT 100".format(select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
-        else:
-            c.execute(
-                "SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%') LIMIT 100".format(select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
-
-        for row in c:
-            try:
-                scripts_decode = row[0].decode('utf-8')
-            except UnicodeDecodeError:
-                scripts_decode = row[0].decode('latin-1')
-                # handle some substring using latin-1 decoding
-            result_list.append({"scripts": scripts_decode,
-                                "season": row[1],
-                                "epinumber": row[2],
-                                "position": row[3],
-                                "time_stamp": row[4],
-                                "show_name": row[5].decode('utf-8'),
-                                "sid": row[6]}
-                               )
-        # put search result into a list of dictionaries
-        for item in result_list:
-            context_result_list = []
-            sid = item["sid"]
-            c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 3)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 3)ORDER BY position ASC;""".format(
-                sid, sid))
-            for new_row in c:
-                test_dic = {}
-                test_dic["position"] = new_row[0]
-                test_dic["time_stamp"] = new_row[1]
-                test_dic["scripts"] = []
-                try:
-                    context_scripts_decode = new_row[2].decode('utf-8')
-                except UnicodeDecodeError:
-                    context_scripts_decode = new_row[2].decode('latin-1')
-                # handle some substring using latin-1 decoding
-                test_dic["scripts"].append(context_scripts_decode)
-                test_dic["sid"] = new_row[3]
-                context_result_list.append(test_dic)
-            item["context"] = context_result_list
-        # for each of the search result, get 4 lines of context and add as
-        # the last dic in result_list
+        result_list = search_scripts_database(
+            c, conn, select, title, result_list)
         c.close()
         conn.close()
         gc.collect()
@@ -397,7 +417,7 @@ def search_results(title, select):
         # store in a temp table
 
         data = result_list
-        return render_template("search_results.html", data=data)
+        return render_template("search_results.html", data=data, form=form, list_of_show=list_of_show, title=title, select=select)
     except Exception as e:
         return('Search result page error: ' + str(e))
         # flash("Sorry, can't find any match.")
