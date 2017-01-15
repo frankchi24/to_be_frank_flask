@@ -212,15 +212,18 @@ def search_scripts_database(select, title):
 
 def search_scripts_sqlalchemy(select, title):
     result_list = []
+    title = '%' + title + ' %'
+    title2 = '%' + title + ' %'
     if select == "all":
-        title = '%' + title + ' %'
-        title2 = '%' + title + ' %'
         rows = scripts.query.filter(or_(scripts.scripts.like(
             title), scripts.scripts.like(title2))).limit(1000).all()
     else:
-        pass
-        # rows = scripts.query(scripts.(where(season_name == select))).filter(or_(scripts.scripts.like(
-        #     title), scripts.scripts.like(title2))).all()
+        rows = scripts.query.filter(
+            and_(
+                scripts.show_name == select,
+                or_(scripts.scripts.like(title), scripts.scripts.like(title2))
+            )
+        ).limit(1000).all()
     for row in rows:
         context1 = scripts.query.filter(scripts.sid < row.sid).order_by(
             desc(scripts.sid)).limit(3).all()
@@ -482,16 +485,13 @@ def search_results(select, title):
         select = select.encode('utf-8')
         # result_list = search_scripts_database(select, title)
         result_list = search_scripts_sqlalchemy(select, title)
-
         result_count = len(result_list)
-
         return render_template("search_results.html",
                                result_list=result_list,
                                form=form,
                                list_of_show=list_of_show,
                                title=title,
                                select=select)
-
     except Exception as e:
         return('Search result page error: ' + str(e))
         # flash("Sorry, can't find any match.")
