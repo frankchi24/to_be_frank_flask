@@ -14,7 +14,90 @@ import pygal
 from flask_misaka import markdown
 from flask_pagedown import PageDown
 from flask_pagedown.fields import PageDownField
-from werkzeug.contrib.cache import SimpleCache
+from tempfile import mkstemp
+# from flask_cache import Cache
+# from werkzeug.contrib.cache import SimpleCache
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, and_, or_, asc, desc
+from sqlalchemy.sql import select
+
+app = Flask(
+    __name__, instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected')
+app.secret_key = "frankchi24"
+
+# MAIL
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME='frankchi24@gmail.com',
+    MAIL_PASSWORD='ppzc jgyf ihrx dbov',
+    SQLALCHEMY_DATABASE_URI='mysql+mysqldb://root:bestdrumer322@localhost/to_be_frank?charset=utf8',
+    SQLALCHEMY_NATIVE_UNICODE=True,
+    SQLALCHEMY_TRACK_MODIFICATIONS=False
+)
+mail = Mail(app)
+pagedown = PageDown(app)
+
+# cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+# cache = SimpleCache()
+
+# SQLAlchemy
+db = SQLAlchemy(app)
+# Base = automap_base()
+# db.reflect()  # reflection to get table meta
+
+
+class scripts(db.Model):
+    sid = db.Column(db.Integer, primary_key=True)
+    scripts = db.Column(db.String(500), unique=False)
+    position = db.Column(db.String(11), unique=False)
+    time_stamp = db.Column(db.String(100), unique=False)
+    epinumber = db.Column(db.Integer(), unique=False)
+    season = db.Column(db.Integer(), unique=False)
+    show_name = db.Column(db.String(100), unique=False)
+    footnote = db.Column(db.String(1000), unique=False)
+    tags = db.Column(db.String(100), unique=False)
+
+    def __init__(self, sid, scripts, position, time_stamp, epinumber, season, show_name, footnote, tags):
+        self.sid = sid
+        self.scripts = scripts
+        self.position = position
+        self.time_stamp = time_stamp
+        self.epinumber = epinumber
+        self.season = season
+        self.show_name = show_name
+        self.season = season
+        self.footnote = footnote
+        self.tagss = tags
+
+    def __repr__(self):
+        return '<scripts %r>' % self.scripts
+
+
+class posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80), unique=True)
+    sub_title = db.Column(db.String(120), unique=False)
+    author = db.Column(db.String(20), unique=False)
+    date_time = db.Column(db.Date(), unique=False)
+    post_content = db.Column(db.Text(), unique=False)
+
+    def __init__(self, title, sub_title, author, date_time, post_content):
+        self.title = title
+        self.sub_title = sub_title
+        self.author = author
+        self.date_time = date_time
+        self.post_content = post_content
+
+    def __repr__(self):
+        return '<posts %r>' % self.title
+
+db.create_all()
 
 
 class RegistrationForm(Form):
@@ -76,25 +159,15 @@ def login_required(f):
     return wrap
 
 
-def search_history(query):
-    history = cache.get('search_history')
-    if history is None:
-        starting_list = [query]
-        cache.set('search_history', starting_list)
-        return cache.get('search_history')
-    else:
-        new_history = history.append(query)
-        cache.add('search_history', new_history, timeout=None)
-        return cache.get('search_history')
-
-
-def search_scripts_database(c, conn, select, title, result_list):
+def search_scripts_database(select, title):
+    c, conn = connection_scripts()
     if select == "all":
         c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%' LIMIT 100".format(
             select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
     else:
         c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%') LIMIT 100".format(
             select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
+    result_list = []
     for row in c:
         try:
             scripts_decode = row[0].decode('utf-8')
@@ -131,38 +204,49 @@ def search_scripts_database(c, conn, select, title, result_list):
             item["context"] = context_result_list
             # for each of the search result, get 4 lines of context and add as
             # the last dic in result_list
+    c.close()
+    conn.close()
+    gc.collect()
+    return result_list
+
+
+def search_scripts_sqlalchemy(select, title):
+    result_list = []
+    if select == "all":
+        title = '%' + title + ' %'
+        title2 = '%' + title + ' %'
+        rows = scripts.query.filter(or_(scripts.scripts.like(
+            title), scripts.scripts.like(title2))).limit(1000).all()
+    else:
+        pass
+        # rows = scripts.query(scripts.(where(season_name == select))).filter(or_(scripts.scripts.like(
+        #     title), scripts.scripts.like(title2))).all()
+    for row in rows:
+        context1 = scripts.query.filter(scripts.sid < row.sid).order_by(
+            desc(scripts.sid)).limit(3).all()
+        context2 = scripts.query.filter(
+            scripts.sid >= row.sid).order_by(asc(scripts.sid)).limit(3).all()
+        context_list = context1 + context2
+        result_list.append({"scripts": row.scripts,
+                            "season": row.season,
+                            "epinumber": row.epinumber,
+                            "position": row.position,
+                            "time_stamp": row.time_stamp,
+                            "show_name": row.show_name,
+                            "sid": row.sid,
+                            "context": context_list
+                            })
     return result_list
 
 
 def header_image_path(title):
-    header_pic_path = {"How I Met Your Mother": 'img/tv_show_background.jpg',
-                       "House of Cards": 'img/tv_show_background.jpg',
-                       "Suits": 'img/tv_show_background.jpg',
-                       "Mad Men": 'img/tv_show_background.jpg',
-                       "The Big Bang Theory": 'img/tv_show_background.jpg',
-                       }
-    path = header_pic_path[title]
-    return path
-
-app = Flask(
-    __name__, instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected')
-app.secret_key = "frankchi24"
-
-# MAIL
-app.config.update(
-    DEBUG=True,
-    # EMAIL SETTINGS
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USE_SSL=True,
-    MAIL_USERNAME='frankchi24@gmail.com',
-    MAIL_PASSWORD='ppzc jgyf ihrx dbov'
-
-)
-mail = Mail(app)
-pagedown = PageDown(app)
-# cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-cache = SimpleCache()
+    path = {"How I Met Your Mother": 'img/tv_show_background.jpg',
+            "House of Cards": 'img/tv_show_background.jpg',
+            "Suits": 'img/tv_show_background.jpg',
+            "Mad Men": 'img/tv_show_background.jpg', "The Big Bang Theory": 'img/tv_show_background.jpg',
+            }
+    search_header_path = path[title]
+    return search_header_path
 
 
 @app.route('/')
@@ -170,29 +254,26 @@ def homepage():
     try:
         form = RegistrationForm(request.form)
         title_list = []
-        c, conn = connection()
-        c.execute(
-            "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC LIMIT 3 ;")
-        for row in c:
-            title_list.append({"title": row[1].decode('utf-8'),
-                               "sub_title": row[2].decode('utf-8'),
-                               "author": row[3].decode('utf-8'),
-                               "date_time": row[4]}
-                              )
-        conn.commit()
-        c.close()
-        conn.close()
-        gc.collect()
+        for row in posts.query.all():
+            title_list.append({"title": row.title,
+                               "sub_title": row.sub_title,
+                               "author": row.author,
+                               "date_time": row.date_time})
         return render_template("main.html", title_list=title_list)
-
     except Exception as e:
         return 'main page error: ' + str(e)
-    # another way to show error
-    # try:
-    # 	return render_template("main.html",TOPIC_DIC = TOPIC_DI)
-
-    # except Exception as e:
-    # 	return str(e)
+        # c, conn = connection()
+        # c.execute(
+        #     "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC LIMIT 3 ;")
+        # for row in c:
+        #     title_list.append({"title": row[1].decode('utf8'),
+        #                        "sub_title": row[2].decode('utf8'),
+        #                        "author": row[3].decode('utf8'),
+        #                        "date_time": row[4]})
+        # conn.commit()
+        # c.close()
+        # conn.close()
+        # gc.collect()
 
 
 @app.route('/about/')
@@ -207,26 +288,31 @@ def panel():
     try:
         form = post_submit(request.form)
         if request.method == "POST":
-            title = form.title.data.encode('utf-8')
-            sub_title = form.sub_title.data.encode('utf-8')
-            author = form.author.data.encode('utf-8')
-            date = form.date.data
-            post = markdown(form.pagedown.data).encode('utf-8')
-
-            c, conn = connection()
-            c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
-                title, sub_title, author, date, post))
-            conn.commit()
+            title = form.title.data
+            sub_title = form.sub_title.data
+            author = form.author.data
+            date_time = form.date.data
+            post_content = markdown(form.pagedown.data)
+            hold_post = posts(title, sub_title, author,
+                              date_time, post_content)
+            db.session.add(hold_post)
+            db.session.commit()
             flash("Thanks for posting!")
-            c.close()
-            conn.close()
-            gc.collect()
-            return redirect(url_for('post', post_name=title.decode('utf-8')))
+            return redirect(url_for('post', post_name=title))
         else:
             return render_template("panel.html", form=form)
     except Exception as e:
         return('Panel page error: ' + str(e))
     return render_template("panel.html")
+    # using sql approach
+    # c, conn = connection()
+    # c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
+    #     title, sub_title, author, date, post_content))
+    # conn.commit()
+    # flash("Thanks for posting!")
+    # c.close()
+    # conn.close()
+    # gc.collect()
 
 
 @app.route('/contact/')
@@ -237,20 +323,12 @@ def contact():
 @app.route('/post/<string:post_name>/')
 def post(post_name):
     try:
-        c, conn = connection()
-        c.execute(
-            "SELECT * FROM posts WHERE title = '{0}';".format(post_name.encode('utf-8')))
-        for row in c:
-            title = row[1].decode('utf-8')
-            sub_title = row[2].decode('utf-8')
-            author = row[3].decode('utf-8')
-            date_time = row[4]
-            post = row[5].decode('utf-8')
-        conn.commit()
-        c.close()
-        conn.close()
-        gc.collect()
-
+        row = posts.query.filter_by(title=post_name).first()
+        title = row.title
+        sub_title = row.sub_title
+        author = row.author
+        date_time = row.date_time
+        post = row.post_content
         return render_template("post.html",
                                title=title,
                                sub_title=sub_title,
@@ -373,6 +451,7 @@ def scripts_search():
     try:
         form = search(request.form)
         list_of_show = get_list_of_shows()
+
         # get the list of all shows in databases
         if request.method == "POST" and form.validate():
             title = form.title.data
@@ -387,37 +466,32 @@ def scripts_search():
         # error page
 
 
-@app.route("/search_results/<string:select>/<string:title>")
-def search_results(title, select):
+@app.route("/search_results/<string:select>/<string:title>", methods=['GET', 'POST'])
+@login_required
+@admin_required
+def search_results(select, title):
     try:
         form = search(request.form)
         list_of_show = get_list_of_shows()
-
         if request.method == "POST" and form.validate():
             title = form.title.data
             select = request.form.get('select_show')
-
             return redirect(url_for('search_results', title=title, select=select))
 
         title = title.encode('utf-8')
         select = select.encode('utf-8')
-        result_list = []
-        c, conn = connection_scripts()
-        result_list = search_scripts_database(
-            c, conn, select, title, result_list)
-        c.close()
-        conn.close()
-        gc.collect()
+        # result_list = search_scripts_database(select, title)
+        result_list = search_scripts_sqlalchemy(select, title)
 
-        # connect to store user history
-        # temporary tables
-        # store in ajax or javascript
-        # flask cache
-        # store in a relational table
-        # store in a temp table
+        result_count = len(result_list)
 
-        data = result_list
-        return render_template("search_results.html", data=data, form=form, list_of_show=list_of_show, title=title, select=select)
+        return render_template("search_results.html",
+                               result_list=result_list,
+                               form=form,
+                               list_of_show=list_of_show,
+                               title=title,
+                               select=select)
+
     except Exception as e:
         return('Search result page error: ' + str(e))
         # flash("Sorry, can't find any match.")
@@ -427,18 +501,24 @@ def search_results(title, select):
 
 @app.route("/file_downloads/")
 def file_downloads():
-    return render_template("downloads.html")
+    try:
+        pass
+        # get variables title
+        # print stuff in the text file
+        # get return file downd
+    except Exception as e:
+        return ('File download page error: ' + str(e))
+        # return render_template("downloads.html")
 
 
 # file handling
+
+
 @app.route("/return_files/")
 def return_files():
-    return send_file('/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/static/img/test.pdf', as_attachment=True)
+    os_path = '/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected/'
 
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('/404.html')
+    return send_file(os_path, as_attachment=True)
 
 
 @app.route('/send-mail/')
@@ -503,6 +583,11 @@ def pygalexample():
 @app.errorhandler(405)
 def method_not_found(e):
     return render_template('/405.html')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('/404.html')
 
 
 app.config.update(

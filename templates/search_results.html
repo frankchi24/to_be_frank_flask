@@ -45,11 +45,11 @@
     <div class="row">
         <div class="col-lg-8 col-md-10 col-md-offset-1">
             <h2>
-                Results from TV show : {{ data[0]['show_name'] }}
+                Results from TV show : {{ result_list[0]['show_name'] }}
             </h2>
             <br>
             
-            {% for t in data %} 
+            {% for t in result_list %} 
             <div class="post-preview">
                 <h3 class="post-subtitle">
                     <a type="button" data-toggle="collapse" data-target="#{{ t['sid'] }}" aria-expanded="false" aria-controls="{{ t['sid'] }}">"{{ t["scripts"] }}"</a>
@@ -64,9 +64,7 @@
               <div class="well">
                   {{ t["time_stamp"]}}
                   {% for context in t['context'] %} 
-                    {% for t in context['scripts'] %} 
-                      <p class = "context_scripts">{{ t }}</p> 
-                    {% endfor %}
+                      <p class = "context_scripts">{{ context['scripts'] }}</p> 
                   {% endfor %}
               </div>
           </div>
