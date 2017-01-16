@@ -12,7 +12,7 @@
                 <div id = "search-heading" class="page-heading">
                     <h1>Here you go!</h1>
                     <hr class="small">
-                    <span class="subheading">"{{title }}" from {{ select }}</span>
+                    <span class="subheading">"{{ title }}" from {{ select }}</span>
 
                 </div>
                 {% from "_formhelpers2.html" import render_field %}
@@ -45,7 +45,7 @@
     <div class="row">
         <div class="col-lg-8 col-md-10 col-md-offset-1">
             <h2>
-                Results from TV show : {{ result_list[0]['show_name'] }}
+                "{{ title }}" from TV show : "{{ select }}"
             </h2>
             <br>
             
@@ -63,8 +63,8 @@
             <div class="collapse" id="{{ t['sid'] }}">
               <div class="well">
                   {{ t["time_stamp"]}}
-                  {% for context in t['context'] %} 
-                      <p class = "context_scripts">{{ context['scripts'] }}</p> 
+                  {% for context in t['footnote'] %} 
+                      <p class = "context_scripts">{{ context }}</p> 
                   {% endfor %}
               </div>
           </div>
@@ -81,6 +81,51 @@
         </ul>
 
     </div>
+</div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1">
+
+            <nav aria-label="Page navigation example">
+              <ul class="pagination">
+                 {% if pagination.has_prev %}
+                 <li class="page-item">
+                  <a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=pagination.prev_num) }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                   
+                </a>
+            </li>
+            {% else %}
+            {% endif %}
+             {% for page in pagination.iter_pages() %}
+                {% if page %}
+                    {% if page != pagination.page %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
+                    {% else %}
+                        <li class="page-item active"><a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="disabled"><a href="#">&hellip;</a></li>
+                {% endif %}
+
+             {% endfor %}
+               
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" 
+                    href="{{ url_for('search_results', title=title, select=select, page=pagination.next_num) }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                       
+                    </a>
+                </li>
+            {% else %}
+        {% endif %}
+    </ul>
+</nav>
+
+</div>
 </div>
 </div>
 

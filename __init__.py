@@ -142,7 +142,6 @@ def get_list_of_shows():
     c.execute("SELECT DISTINCT show_name FROM scripts;")
     for show in c:
         list_of_show.append(show)
-
     c.close()
     conn.close()
     return list_of_show
@@ -159,87 +158,30 @@ def login_required(f):
     return wrap
 
 
-def search_scripts_database(select, title):
-    c, conn = connection_scripts()
-    if select == "all":
-        c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%' LIMIT 100".format(
-            select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
-    else:
-        c.execute("SELECT scripts, season, epinumber, position, time_stamp, show_name, sid FROM scripts WHERE show_name = '{0}' AND (scripts LIKE '%{1} %' OR scripts LIKE '%{2},%' OR scripts LIKE '%{3}.%' OR scripts LIKE '%{4}?%') LIMIT 100".format(
-            select, thwart(title), thwart(title), thwart(title), thwart(title), thwart(title)))
-    result_list = []
-    for row in c:
-        try:
-            scripts_decode = row[0].decode('utf-8')
-        except UnicodeDecodeError:
-            scripts_decode = row[0].decode('latin-1')
-            # handle some substring using latin-1 decoding
-        result_list.append({"scripts": scripts_decode,
-                            "season": row[1],
-                            "epinumber": row[2],
-                            "position": row[3],
-                            "time_stamp": row[4],
-                            "show_name": row[5].decode('utf-8'),
-                            "sid": row[6]}
-                           )
-    # put search result into a list of dictionaries
-        for item in result_list:
-            context_result_list = []
-            sid = item["sid"]
-            c.execute("""(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid < '{0}' ORDER BY sid DESC LIMIT 2)UNION(SELECT position,time_stamp, scripts, sid FROM scripts WHERE sid >= '{1}' ORDER BY sid ASC LIMIT 2)ORDER BY position ASC;""".format(
-                sid, sid))
-            for new_row in c:
-                test_dic = {}
-                test_dic["position"] = new_row[0]
-                test_dic["time_stamp"] = new_row[1]
-                test_dic["scripts"] = []
-                try:
-                    context_scripts_decode = new_row[2].decode('utf-8')
-                except UnicodeDecodeError:
-                    context_scripts_decode = new_row[2].decode('latin-1')
-                # handle some substring using latin-1 decoding
-                test_dic["scripts"].append(context_scripts_decode)
-                test_dic["sid"] = new_row[3]
-                context_result_list.append(test_dic)
-            item["context"] = context_result_list
-            # for each of the search result, get 4 lines of context and add as
-            # the last dic in result_list
-    c.close()
-    conn.close()
-    gc.collect()
-    return result_list
-
-
-def search_scripts_sqlalchemy(select, title):
-    result_list = []
-    title = '%' + title + ' %'
+def search_scripts_sqlalchemy(page, select, title):
+    title1 = '%' + title + '%'
     title2 = '%' + title + ' %'
     if select == "all":
         rows = scripts.query.filter(or_(scripts.scripts.like(
-            title), scripts.scripts.like(title2))).limit(1000).all()
+            title1), scripts.scripts.like(title2))).paginate(page, 25, False)
+
     else:
-        rows = scripts.query.filter(
-            and_(
-                scripts.show_name == select,
-                or_(scripts.scripts.like(title), scripts.scripts.like(title2))
-            )
-        ).limit(1000).all()
-    for row in rows:
-        context1 = scripts.query.filter(scripts.sid < row.sid).order_by(
-            desc(scripts.sid)).limit(3).all()
+        rows = scripts.query.filter(and_(scripts.show_name == select,
+                                         or_(scripts.scripts.like(title1),
+                                             scripts.scripts.like(title2))
+                                         )
+                                    ).paginate(page, 30, False)
+    for row in rows.items:
+        context1 = scripts.query.filter(
+            scripts.sid < row.sid).order_by(desc(scripts.sid)).limit(3).all()
         context2 = scripts.query.filter(
             scripts.sid >= row.sid).order_by(asc(scripts.sid)).limit(3).all()
-        context_list = context1 + context2
-        result_list.append({"scripts": row.scripts,
-                            "season": row.season,
-                            "epinumber": row.epinumber,
-                            "position": row.position,
-                            "time_stamp": row.time_stamp,
-                            "show_name": row.show_name,
-                            "sid": row.sid,
-                            "context": context_list
-                            })
-    return result_list
+        context = context1 + context2
+        test = ''
+        for c in context:
+            test = test + c.scripts
+        row.footnote = test
+    return rows
 
 
 def header_image_path(title):
@@ -256,27 +198,41 @@ def header_image_path(title):
 def homepage():
     try:
         form = RegistrationForm(request.form)
-        title_list = []
-        for row in posts.query.all():
-            title_list.append({"title": row.title,
-                               "sub_title": row.sub_title,
-                               "author": row.author,
-                               "date_time": row.date_time})
+        title_list = posts.query.limit(3).all()
+
         return render_template("main.html", title_list=title_list)
     except Exception as e:
         return 'main page error: ' + str(e)
-        # c, conn = connection()
-        # c.execute(
-        #     "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC LIMIT 3 ;")
-        # for row in c:
-        #     title_list.append({"title": row[1].decode('utf8'),
-        #                        "sub_title": row[2].decode('utf8'),
-        #                        "author": row[3].decode('utf8'),
-        #                        "date_time": row[4]})
-        # conn.commit()
-        # c.close()
-        # conn.close()
-        # gc.collect()
+
+
+@app.route('/blog_archive/')
+@app.route('/blog_archive/page/<int:page>/')
+def blog_archive(page=1):
+    try:
+        title_list = posts.query.paginate(page, 3, False).items
+        pagination_list = posts.query.paginate(page, 3, False)
+        return render_template("blog_archive.html", title_list=title_list, page=page, pagination_list=pagination_list)
+    except Exception, e:
+        return('blog_archive page error: ' + str(e))
+
+
+@app.route('/post/<string:post_name>/')
+def post(post_name):
+    try:
+        row = posts.query.filter_by(title=post_name).first()
+        title = row.title
+        sub_title = row.sub_title
+        author = row.author
+        date_time = row.date_time
+        post = row.post_content
+        return render_template("post.html",
+                               title=title,
+                               sub_title=sub_title,
+                               author=author,
+                               date_time=date_time,
+                               post=post)
+    except Exception, e:
+        return('post page error: ' + str(e))
 
 
 @app.route('/about/')
@@ -307,61 +263,11 @@ def panel():
     except Exception as e:
         return('Panel page error: ' + str(e))
     return render_template("panel.html")
-    # using sql approach
-    # c, conn = connection()
-    # c.execute("INSERT INTO posts (title, sub_title, author, date_time, post) VALUES ('{0}', '{1}', '{2}', '{3}','{4}');".format(
-    #     title, sub_title, author, date, post_content))
-    # conn.commit()
-    # flash("Thanks for posting!")
-    # c.close()
-    # conn.close()
-    # gc.collect()
 
 
 @app.route('/contact/')
 def contact():
     return render_template("contact.html")
-
-
-@app.route('/post/<string:post_name>/')
-def post(post_name):
-    try:
-        row = posts.query.filter_by(title=post_name).first()
-        title = row.title
-        sub_title = row.sub_title
-        author = row.author
-        date_time = row.date_time
-        post = row.post_content
-        return render_template("post.html",
-                               title=title,
-                               sub_title=sub_title,
-                               author=author,
-                               date_time=date_time,
-                               post=post)
-    except Exception, e:
-        return('post page error: ' + str(e))
-
-
-@app.route('/blog_archive/')
-def blog_archive():
-    try:
-        title_list = []
-        c, conn = connection()
-        c.execute(
-            "SELECT pid, title, sub_title , author, date_time FROM posts ORDER BY date_time ASC;")
-        for row in c:
-            title_list.append({"title": row[1].decode('utf-8'),
-                               "sub_title": row[2].decode('utf-8'),
-                               "author": row[3].decode('utf-8'),
-                               "date_time": row[4]}
-                              )
-        conn.commit()
-        c.close()
-        conn.close()
-        gc.collect()
-        return render_template("blog_archive.html", title_list=title_list)
-    except Exception, e:
-        return('All_posts page error: ' + str(e))
 
 
 @app.route('/register/', methods=["GET", "POST"])
@@ -457,9 +363,9 @@ def scripts_search():
 
         # get the list of all shows in databases
         if request.method == "POST" and form.validate():
-            title = form.title.data
-            select = request.form.get('select_show')
-            return redirect(url_for('search_results', title=title, select=select))
+            title = form.title.data.encode('utf8')
+            select = request.form.get('select_show').encode('utf8')
+            return redirect(url_for('search_results', title=title, select=select, page=1))
         else:
             return render_template("scripts_search.html", form=form, list_of_show=list_of_show)
 
@@ -469,10 +375,10 @@ def scripts_search():
         # error page
 
 
-@app.route("/search_results/<string:select>/<string:title>", methods=['GET', 'POST'])
+@app.route("/search_results/<string:select>/<string:title>/<int:page>/", methods=['GET', 'POST'])
 @login_required
 @admin_required
-def search_results(select, title):
+def search_results(select, title, page):
     try:
         form = search(request.form)
         list_of_show = get_list_of_shows()
@@ -483,11 +389,13 @@ def search_results(select, title):
 
         title = title.encode('utf-8')
         select = select.encode('utf-8')
-        # result_list = search_scripts_database(select, title)
-        result_list = search_scripts_sqlalchemy(select, title)
-        result_count = len(result_list)
+        pagination = search_scripts_sqlalchemy(page, select, title)
+        flash(pagination.pages)
+        result_list = pagination.items
         return render_template("search_results.html",
                                result_list=result_list,
+                               pagination=pagination,
+                               page=page,
                                form=form,
                                list_of_show=list_of_show,
                                title=title,
