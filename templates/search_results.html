@@ -63,9 +63,10 @@
             <div class="collapse" id="{{ t['sid'] }}">
               <div class="well">
                   {{ t["time_stamp"]}}
-                  {% for context in t['footnote'] %} 
+                        {% for context in t["footnote"].splitlines(True) %} 
                       <p class = "context_scripts">{{ context }}</p> 
-                  {% endfor %}
+                      {% endfor %}
+                
               </div>
           </div>
           <hr>

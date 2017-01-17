@@ -60,7 +60,7 @@ class scripts(db.Model):
     epinumber = db.Column(db.Integer(), unique=False)
     season = db.Column(db.Integer(), unique=False)
     show_name = db.Column(db.String(100), unique=False)
-    footnote = db.Column(db.String(1000), unique=False)
+    footnote = db.Column(db.BLOB(), unique=False)
     tags = db.Column(db.String(100), unique=False)
 
     def __init__(self, sid, scripts, position, time_stamp, epinumber, season, show_name, footnote, tags):
@@ -173,9 +173,9 @@ def search_scripts_sqlalchemy(page, select, title):
                                     ).paginate(page, 30, False)
     for row in rows.items:
         context1 = scripts.query.filter(
-            scripts.sid < row.sid).order_by(desc(scripts.sid)).limit(3).all()
+            scripts.sid < row.sid).order_by(desc(scripts.sid)).limit(2).all()
         context2 = scripts.query.filter(
-            scripts.sid >= row.sid).order_by(asc(scripts.sid)).limit(3).all()
+            scripts.sid >= row.sid).order_by(asc(scripts.sid)).limit(2).all()
         context = context1 + context2
         test = ''
         for c in context:
