@@ -24,22 +24,10 @@ from sqlalchemy import create_engine, and_, or_, asc, desc
 from sqlalchemy.sql import select
 
 app = Flask(
-    __name__, instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/FlaskApp/protected')
-app.secret_key = "frankchi24"
-
-# MAIL
-app.config.update(
-    DEBUG=True,
-    # EMAIL SETTINGS
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USE_SSL=True,
-    MAIL_USERNAME='frankchi24@gmail.com',
-    MAIL_PASSWORD='ppzc jgyf ihrx dbov',
-    SQLALCHEMY_DATABASE_URI='mysql+mysqldb://root:bestdrumer322@localhost/to_be_frank?charset=utf8',
-    SQLALCHEMY_NATIVE_UNICODE=True,
-    SQLALCHEMY_TRACK_MODIFICATIONS=False
-)
+    __name__, instance_relative_config=True,
+    instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/instance')
+app.config.from_object('config')
+app.config.from_pyfile('config.py')
 mail = Mail(app)
 pagedown = PageDown(app)
 
