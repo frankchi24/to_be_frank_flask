@@ -159,11 +159,11 @@ def login_required(f):
 
 
 def search_scripts_sqlalchemy(page, select, title):
-    title1 = '%' + title + '%'
-    title2 = '%' + title + ' %'
+    title1 = '% ' + title + ' %'
+    title2 = title + ' %'
     if select == "all":
         rows = scripts.query.filter(or_(scripts.scripts.like(
-            title1), scripts.scripts.like(title2))).paginate(page, 25, False)
+            title1), scripts.scripts.like(title2))).paginate(page, 30, False)
 
     else:
         rows = scripts.query.filter(and_(scripts.show_name == select,

@@ -44,9 +44,15 @@
 <div class = "container">
     <div class="row">
         <div class="col-lg-8 col-md-10 col-md-offset-1">
+        {% if select == 'all' %}
             <h2>
-                "{{ title }}" from TV show : "{{ select }}"
+                "{{ title }}" from all TV shows 
             </h2>
+        {% else %}
+             <h2>
+            "{{ title }} from TV show "{{ select }}"
+            </h2>
+         {% endif %}
             <br>
             
             {% for t in result_list %} 
