@@ -99,7 +99,7 @@
               <ul class="pagination">
                  {% if pagination.has_prev %}
                  <li class="page-item">
-                  <a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=pagination.prev_num) }}" aria-label="Previous">
+                  <a class="page-link" href="{{ url_for('search_scripts.search_results', title=title, select=select, page=pagination.prev_num) }}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                    
                 </a>
@@ -109,9 +109,9 @@
              {% for page in pagination.iter_pages() %}
                 {% if page %}
                     {% if page != pagination.page %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
+                        <li class="page-item"><a class="page-link" href="{{ url_for('search_scripts.search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
                     {% else %}
-                        <li class="page-item active"><a class="page-link" href="{{ url_for('search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
+                        <li class="page-item active"><a class="page-link" href="{{ url_for('search_scripts.search_results', title=title, select=select, page=page) }}">{{ page }}</a></li>
                     {% endif %}
                 {% else %}
                     <li class="disabled"><a href="#">&hellip;</a></li>
@@ -122,7 +122,7 @@
             {% if pagination.has_next %}
                 <li class="page-item">
                     <a class="page-link" 
-                    href="{{ url_for('search_results', title=title, select=select, page=pagination.next_num) }}" aria-label="Next">
+                    href="{{ url_for('search_scripts.search_results', title=title, select=select, page=pagination.next_num) }}" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                        
                     </a>
