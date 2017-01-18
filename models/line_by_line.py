@@ -1,6 +1,4 @@
-from dbconnect import connection, connection_scripts
-from passlib.hash import sha256_crypt
-from MySQLdb import escape_string as thwart
+from FlaskApp.dbconnect import connection, connection_scripts
 from sqlalchemy_mapping import scripts
 from sqlalchemy import and_, or_, asc, desc
 
@@ -17,7 +15,7 @@ def get_list_of_shows():
 
 
 def search_scripts_sqlalchemy(page, select, title):
-    title1 = '% ' + title + ' %'
+    title1 = '% ' + title + '%'
     title2 = title + ' %'
     if select == "all":
         rows = scripts.query.filter(or_(scripts.scripts.like(

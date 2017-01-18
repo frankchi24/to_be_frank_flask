@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, flash, render_template, jsonify, send_file, send_from_directory
-from util import admin_required, login_required
+from FlaskApp.util import admin_required, login_required
 import smtplib
 import os
 import pygal

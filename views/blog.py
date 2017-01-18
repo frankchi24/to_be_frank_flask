@@ -1,8 +1,8 @@
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
-from forms import RegistrationForm, post_submit
+from FlaskApp.forms import RegistrationForm, post_submit
 from FlaskApp.models import posts, scripts, db
-from util import admin_required, login_required
+from FlaskApp.util import admin_required, login_required
 from flask_misaka import markdown
 
 blog = Blueprint('blog', __name__)

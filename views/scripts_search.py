@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, flash, render_template
-from util import admin_required, login_required
-from forms import *
+from FlaskApp.util import admin_required, login_required
+from FlaskApp.forms import *
 from FlaskApp.models import get_list_of_shows, search_scripts_sqlalchemy
 
 search_scripts = Blueprint('search_scripts', __name__)
