@@ -5,8 +5,6 @@ from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
 import os
-# from flask_cache import Cache
-# from werkzeug.contrib.cache import SimpleCache
 from flask_mail import Mail, Message
 from util import admin_required, login_required
 from forms import *
