@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 from FlaskApp.forms import RegistrationForm, post_submit

@@ -2,7 +2,7 @@
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, flash, render_template
 from FlaskApp.util import admin_required, login_required
 from FlaskApp.forms import *
-from FlaskApp.models import get_list_of_shows, search_scripts_sqlalchemy
+from FlaskApp.models import get_list_of_shows, search_scripts_sqlalchemy, header_image_path
 
 search_scripts = Blueprint('search_scripts', __name__)
 
@@ -46,11 +46,13 @@ def search_results(select, title, page):
         pagination = search_scripts_sqlalchemy(page, select, title)
         flash(pagination.pages)
         result_list = pagination.items
+        header_image = header_image_path(select)
         return render_template("search_results.html",
                                result_list=result_list,
                                pagination=pagination,
                                page=page,
                                form=form,
+                               header_image=header_image,
                                list_of_show=list_of_show,
                                title=title,
                                select=select)
