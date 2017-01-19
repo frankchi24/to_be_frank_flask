@@ -20,13 +20,15 @@ class posts(db.Model):
     author = db.Column(db.String(20), unique=False)
     date_time = db.Column(db.Date(), unique=False)
     post_content = db.Column(db.Text(), unique=False)
+    page_down = db.Column(db.Text(), unique=False)
 
-    def __init__(self, title, sub_title, author, date_time, post_content):
+    def __init__(self, title, sub_title, author, date_time, post_content, page_down):
         self.title = title
         self.sub_title = sub_title
         self.author = author
         self.date_time = date_time
         self.post_content = post_content
+        self.page_down = page_down
 
     def __repr__(self):
         return '<posts %r>' % self.title

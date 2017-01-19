@@ -3,43 +3,46 @@
 
 {% block content %}
 
-    <!-- Page Header -->
-    <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/about-bg.jpg') }}')">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <div class="page-heading">
-                        <h1>Admin Panel</h1>
-                        <hr class="small">
-                        <span class="subheading">Sumbit Post Here</span>
-                    </div>
+<!-- Page Header -->
+<!-- Set your background image for this header on the line below. -->
+<header class="intro-header" style="background-image: url('{{ url_for('static',filename = 'img/about-bg.jpg') }}')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="page-heading">
+                    <h1>Admin Panel</h1>
+                    <hr class="small">
+                    <span class="subheading">Sumbit Post Here</span>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <div class = "container">
-        <h2> Submit Post</h2>
-        <br>
-        
-        {% from "_formhelpers.html" import render_field %}
-          {{ pagedown.include_pagedown() }}
-        <form method = post action= "/panel/">
-            <dl>
-                {{render_field(form.title) }}
-                {{render_field(form.sub_title) }}
-                {{render_field(form.author) }}
-                {{render_field(form.date) }}
-                <dd>Post
-                {{form.pagedown(rows=20)}}
-            </dl>
-            <p><input type = submit value = Submit></p>
-        </form>
+<div class = "container">
+    <div class = "row">
+    <div class="col-lg-9 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <h2> Submit Post</h2>
+            <br>
+            {% from "_formhelpers.html" import render_field %}
+            {{ pagedown.include_pagedown() }}
+            <form method = post action= "">
+                <dl>
+                    {{render_field(form.title) }}
+                    {{render_field(form.sub_title) }}
+                    {{render_field(form.author) }}
+                    {{render_field(form.date) }}
+                     <dt>Post</dt>
+                     {{form.pagedown(rows=20)}}
+                </dl>  
+                <p><input type = submit value = Submit></p>
+            </form>
 
-        {% if error %}
-        <p class = "error"><strong>Error:</strong>{{ error }}</p>
-        {% endif %}
+            {% if error %}
+            <p class = "error"><strong>Error:</strong>{{ error }}</p>
+            {% endif %}
+            </div>
+        </div>
     </div>
 
-{% endblock %}
+    {% endblock %}
