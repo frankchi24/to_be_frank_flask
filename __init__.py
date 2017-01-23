@@ -12,7 +12,7 @@ from forms import *
 
 app = Flask(
     __name__, instance_relative_config=True,
-    instance_path='/Users/Mac/Downloads/Coding/flask/FlaskApp/instance')
+    instance_path='/Users/Frank/Dropbox/Coding/Flask/flask/FlaskApp/instance')
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 mail = Mail(app)

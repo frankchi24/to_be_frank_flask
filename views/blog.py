@@ -5,7 +5,6 @@ from FlaskApp.forms import RegistrationForm, post_submit
 from FlaskApp.models import posts, scripts, db
 from FlaskApp.util import admin_required, login_required
 from flask_misaka import markdown
-import pypandoc
 
 blog = Blueprint('blog', __name__)
 
