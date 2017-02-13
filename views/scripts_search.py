@@ -14,7 +14,6 @@ def scripts_search():
     try:
         form = search(request.form)
         list_of_show = get_list_of_shows()
-
         # get the list of all shows in databases
         if request.method == "POST" and form.validate():
             title = form.title.data.encode('utf8')

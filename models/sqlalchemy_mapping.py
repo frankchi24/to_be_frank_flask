@@ -2,9 +2,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from sqlalchemy.sql import select
+from sqlalchemy import create_engine, DateTime
 from FlaskApp import app
+from datetime import datetime
 
 # SQLAlchemy
 # Base = automap_base()
@@ -12,8 +12,15 @@ from FlaskApp import app
 
 db = SQLAlchemy(app)
 
+tags = db.Table('tags',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
+)
+
 
 class posts(db.Model):
+    __tablename__ = 'posts'
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80), unique=True)
     sub_title = db.Column(db.String(120), unique=False)
@@ -21,6 +28,8 @@ class posts(db.Model):
     date_time = db.Column(db.Date(), unique=False)
     post_content = db.Column(db.Text(), unique=False)
     page_down = db.Column(db.Text(), unique=False)
+    tags = db.relationship('tag', secondary=tags,
+        backref=db.backref('posts', lazy='dynamic'))
 
     def __init__(self, title, sub_title, author, date_time, post_content, page_down):
         self.title = title
@@ -30,8 +39,42 @@ class posts(db.Model):
         self.post_content = post_content
         self.page_down = page_down
 
+    def _find_or_create_tag(self, string):
+        q = tag.query.filter_by(tag_name=string)
+        t = q.first()
+        if not t:
+            t = tag(string)
+        return t
+
+    def _get_tags(self):
+        tag_list = []
+        for tag in self.tags:
+            tag_list.append(tag)
+        return tag_list
+
+    def _set_tags(self, string_given):
+        # clear the list first
+        while self.tags:
+            del self.tags[0]
+
+        # string to list
+        list_given = string_given.split(',')
+        # add new tag
+        for t in list_given:
+            self.tags.append(self._find_or_create_tag(t))
+
     def __repr__(self):
         return '<posts %r>' % self.title
+
+class tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tag_name = db.Column(db.String(80), unique=True)
+
+    def __init__(self, tag_name):
+        self.tag_name = tag_name
+
+    def __repr__(self):
+        return '<tag %r>' % self.tag_name
 
 
 class scripts(db.Model):
@@ -59,5 +102,7 @@ class scripts(db.Model):
 
     def __repr__(self):
         return '<scripts %r>' % self.scripts
+
+
 
 db.create_all()

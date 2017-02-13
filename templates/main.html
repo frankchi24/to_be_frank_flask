@@ -36,7 +36,11 @@
                                 {{ t["subtitle"] }}
                             </h3>
                         </a>
-                        <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["date_time"] }}</p>
+                        <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["date_time"] }}
+                        {% for tags in t["tags"] %}
+                            <a href="#"><span class="label label-default">{{ tags.tag_name }}</span></a>
+                        {% endfor %}
+                        </p>
                     </div>
                 <hr>
                 {% endfor %}

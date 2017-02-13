@@ -10,9 +10,16 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1>{{ title }}</h1>
-                        <h2 class="subheading">{{ sub_title }}</h2>
-                        <span class="meta">Posted by {{ author }} on {{ date_time }}</span>
+                        <h1>{{ post.title }}</h1>
+                        <h2 class="subheading">{{ post.sub_title }}</h2>
+                        <span class="meta">Posted by {{ post.author }} on {{ post.date_time }}
+                        </span>
+                        <br>
+                        <span class="meta">
+                        {% for tags in post.tags %}
+                            <a href="#"><span class="label label-default">{{ tags.tag_name }}</span></a>
+                        {% endfor %}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -24,12 +31,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                {{ post|safe }}
+                {{ post.post_content|safe }}
                 </div>
             </div>
         </div>
     </article>
-
 
     <hr>
 
