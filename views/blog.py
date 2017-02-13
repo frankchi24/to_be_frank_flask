@@ -43,6 +43,17 @@ def blog_archive(page=1):
         return('blog_archive page error: ' + str(e))
 
 
+@blog.route('/tag/')
+@blog.route('/tag/<string:select_tag>/')
+def posts_for_tag(select_tag):
+    try:
+        select = tag.query.filter_by(tag_name = select_tag).first()
+        title_list = select.posts
+        return render_template("tag_post.html", title_list=title_list, select_tag= select_tag)
+    except Exception, e:
+        flash('No tag as ' + select_tag)
+        return redirect(url_for('blog.blog_archive'))
+
 @blog.route('/admin_panel/', methods=['GET', 'POST'])
 @blog.route('/admin_panel/page/<int:page>/')
 def admin_panel(page=1):

@@ -21,7 +21,7 @@ class post_submit(Form):
     title = StringField(
         'Title', [validators.Required(), validators.Length(min=1, max=20)])
     sub_title = StringField('Subtitle')
-    tags = StringField('tags', [validators.Length(max=20)])
+    tags = StringField('tags', [validators.Length(max=200)])
     author = StringField('Author', [validators.Length(min=1, max=20)])
     date = DateField('Date', format='%Y-%m-%d')
     pagedown = PageDownField('Enter your markdown')
