@@ -38,6 +38,7 @@ class posts(db.Model):
         self.date_time = date_time
         self.post_content = post_content
         self.page_down = page_down
+        #shouldn't add tags here
 
     def _find_or_create_tag(self, string):
         q = tag.query.filter_by(tag_name=string)

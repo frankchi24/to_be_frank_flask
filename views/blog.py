@@ -69,6 +69,8 @@ def delete(pid):
     # delete
     post = posts.query.filter_by(id=pid)
     post_title = post.first().title
+    post.first().tags = []
+    #get rid of the relationship
     post.delete()
     db.session.commit()
     flash('The post [%s] is deleted' % (post_title))
