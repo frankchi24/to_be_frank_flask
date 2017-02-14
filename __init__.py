@@ -8,7 +8,6 @@ import os
 from flask_mail import Mail, Message
 from util import admin_required, login_required
 from forms import *
-from flask_disqus import Disqus
 
 
 
@@ -19,7 +18,6 @@ app.config.from_object('config')
 app.config.from_pyfile('config.py')
 mail = Mail(app)
 pagedown = PageDown(app)
-disq = Disqus(app)
 # cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 # cache = SimpleCache()
 

@@ -8,9 +8,6 @@ from flask_misaka import markdown
 
 blog = Blueprint('blog', __name__)
 
-
-
-
 @blog.route('/')
 def homepage():
     try:
@@ -28,8 +25,6 @@ def post(post_name):
         return render_template("post.html",post = post)
     except Exception, e:
         return('post page error: ' + str(e))
-
-
 
 
 @blog.route('/blog_archive/')
@@ -139,7 +134,6 @@ def editor(pid):
             post.post_content = markdown(form.pagedown.data)
             post.page_down = form.pagedown.data
             db.session.commit()
-            flash(post.page_down)
             return redirect(url_for('blog.post', post_name=new_title))
         else:
             pass
