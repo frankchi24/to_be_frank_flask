@@ -113,7 +113,7 @@
                     <div class="card"></div>
                     <div class="card">
                       <h1 class="title">Login</h1>
-                      <form action = "{{ url_for('login') }}" method = "POST">
+                      <form action = "{{ url_for('signin_view.login') }}" method = "POST">
                         <div class="input-container">
                           <input type="text" id="Username" name = "username" value = "{{ request.form.username }}" required="required"/>
                           <label for="Username">Username</label>

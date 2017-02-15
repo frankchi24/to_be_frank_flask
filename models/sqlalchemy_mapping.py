@@ -17,6 +17,23 @@ tags = db.Table('tags',
     db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
 )
 
+class users(db.Model):
+    __tablename__ = 'users'
+
+    uid = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(20), unique = True)
+    password = db.Column(db.String(100))
+    email = db.Column(db.String(50),unique = True)
+
+    def __init__(self, username, password,email):
+        self.username = username
+        self.password = password
+        self.email = email
+
+    def __repr__(self):
+        return '<users %r>' % self.users
+
+
 
 class posts(db.Model):
     __tablename__ = 'posts'
@@ -81,7 +98,7 @@ class tag(db.Model):
 class scripts(db.Model):
     sid = db.Column(db.Integer, primary_key=True)
     scripts = db.Column(db.String(500), unique=False)
-    position = db.Column(db.String(11), unique=False)
+    password = db.Column(db.String(11), unique=False)
     time_stamp = db.Column(db.String(100), unique=False)
     epinumber = db.Column(db.Integer(), unique=False)
     season = db.Column(db.Integer(), unique=False)
@@ -89,7 +106,7 @@ class scripts(db.Model):
     footnote = db.Column(db.BLOB(), unique=False)
     tags = db.Column(db.String(100), unique=False)
 
-    def __init__(self, sid, scripts, position, time_stamp, epinumber, season, show_name, footnote, tags):
+    def __init__(self, sid, scripts, password, time_stamp, epinumber, season, show_name, footnote, tags):
         self.sid = sid
         self.scripts = scripts
         self.position = position
