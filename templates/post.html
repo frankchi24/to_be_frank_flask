@@ -12,12 +12,12 @@
                     <div class="post-heading">
                         <h1>{{ post.title }}</h1>
                         <h2 class="subheading">{{ post.sub_title }}</h2>
-                        <span class="meta">Posted by {{ post.author }} on {{ post.date_time }}
+                        <span class="meta">Posted by <a href = "{{ url_for('blog.author_for_post',author = post.author)}}">{{ post.author }}</a> on {{ post.date_time }}
                         </span>
                         <br>
                         <span class="meta">
                         {% for tags in post.tags %}
-                            <a href="#"><span class="label label-default">{{ tags.tag_name }}</span></a>
+                            <a href="{{ url_for('blog.posts_for_tag',select_tag=tags.tag_name)}}"><span class="label label-default">{{ tags.tag_name }}</span></a>
                         {% endfor %}
                         </span>
                     </div>

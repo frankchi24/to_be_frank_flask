@@ -23,7 +23,7 @@
           <li class="active">
             <a  href="#1a" data-toggle="tab">Edit Previous Posts</a>
           </li>
-          <li><a href="{{ url_for('blog.new_post')}}">New PostsTags</a>
+          <li><a href="{{ url_for('blog.new_post')}}">New Post</a>
         </li>
         <li><a href="#3a" data-toggle="tab">Users</a>
       </li>
@@ -49,7 +49,7 @@
             {{ t["sub_title"] }}
             </h3>
           </a>
-          <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["date_time"] }}
+          <p class="post-meta">Posted by <a href="{{ url_for('blog.author_for_post',author = t['author'])}}">{{ t["author"] }}</a> on {{ t["date_time"] }}
           {% if session.admin %}
             <a href="{{ url_for('blog.delete', pid= t['id'] )}}">
               <button class="btn btn-default btn-sm">

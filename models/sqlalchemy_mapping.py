@@ -24,6 +24,8 @@ class users(db.Model):
     username = db.Column(db.String(20), unique = True)
     password = db.Column(db.String(100))
     email = db.Column(db.String(50),unique = True)
+    posts = db.relationship('posts', backref='users',
+                                lazy='dynamic')
 
     def __init__(self, username, password,email):
         self.username = username
@@ -45,16 +47,19 @@ class posts(db.Model):
     date_time = db.Column(db.Date(), unique=False)
     post_content = db.Column(db.Text(), unique=False)
     page_down = db.Column(db.Text(), unique=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.uid'))
     tags = db.relationship('tag', secondary=tags,
         backref=db.backref('posts', lazy='dynamic'))
+    
 
-    def __init__(self, title, sub_title, author, date_time, post_content, page_down):
+    def __init__(self, title, sub_title, author, date_time, post_content, page_down,user_id):
         self.title = title
         self.sub_title = sub_title
         self.author = author
         self.date_time = date_time
         self.post_content = post_content
         self.page_down = page_down
+        self.user_id = user_id
         #shouldn't add tags here
 
     def _find_or_create_tag(self, string):

@@ -36,7 +36,7 @@
                         {{ t["sub_title"] }}
                     </h3>
                 </a>
-                <p class="post-meta">Posted by <a href="#">{{ t["author"] }}</a> on {{ t["date_time"] }} 
+                <p class="post-meta">Posted by <a href="{{ url_for('blog.author_for_post',author = t['author'])}}">{{ t["author"] }}</a> on {{ t["date_time"] }} 
                 {% for tags in t["tags"] %}
                 <a href="{{ url_for('blog.posts_for_tag',select_tag=tags.tag_name)}}"><span class="label label-default">{{ tags.tag_name }}</span></a>
                 {% endfor %}
