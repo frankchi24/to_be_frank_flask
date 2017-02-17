@@ -104,7 +104,7 @@ class tag(db.Model):
 class scripts(db.Model):
     sid = db.Column(db.Integer, primary_key=True)
     scripts = db.Column(db.String(500), unique=False)
-    password = db.Column(db.String(11), unique=False)
+    position = db.Column(db.String(11), unique=False)
     time_stamp = db.Column(db.String(100), unique=False)
     epinumber = db.Column(db.Integer(), unique=False)
     season = db.Column(db.Integer(), unique=False)
@@ -112,7 +112,7 @@ class scripts(db.Model):
     footnote = db.Column(db.BLOB(), unique=False)
     tags = db.Column(db.String(100), unique=False)
 
-    def __init__(self, sid, scripts, password, time_stamp, epinumber, season, show_name, footnote, tags):
+    def __init__(self, sid, scripts, position, time_stamp, epinumber, season, show_name, footnote, tags):
         self.sid = sid
         self.scripts = scripts
         self.position = position
