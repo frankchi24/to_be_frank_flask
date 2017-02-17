@@ -76,10 +76,11 @@ class posts(db.Model):
         return tag_list
 
     def _set_tags(self, string_given):
+        if string_given.endswith(','):
+            string_given = string_given[:-1]
         # clear the list first
         while self.tags:
             del self.tags[0]
-
         # string to list
         list_given = string_given.split(',')
         # add new tag

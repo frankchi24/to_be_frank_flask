@@ -39,7 +39,6 @@ register_blueprints(app)
 
 
 
-
 # Search_Scripts Function
 @app.route('/send-mail/')
 def send_mail():

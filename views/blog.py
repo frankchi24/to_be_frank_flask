@@ -146,7 +146,6 @@ def editor(pid):
             post._set_tags(form.tags.data)
             post.post_content = markdown(form.pagedown.data)
             post.page_down = form.pagedown.data
-            
             db.session.commit()
             return redirect(url_for('blog.post', post_name=new_title))
         else:
