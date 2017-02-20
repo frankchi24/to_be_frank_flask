@@ -10,7 +10,7 @@ from datetime import datetime
 # Base = automap_base()
 # db.reflect()  # reflection to get table meta
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app,session_options={"autoflush": False})
 
 tags = db.Table('tags',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
